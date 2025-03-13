@@ -6,4 +6,9 @@ fn main() {
         Ok(info) => println!("info: {:?}", info),
         Err(err) => println!("err: {}", err),
     }
+    let topology = media::MediaTopology::new("/dev/media0");
+    match topology {
+        Ok(topology) => println!("topology: {:?}", topology),
+        Err(err) => println!("err: {}", err),
+    }
 }
