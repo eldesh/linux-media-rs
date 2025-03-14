@@ -142,15 +142,6 @@ impl TryFrom<u32> for MediaEntityFlags {
     }
 }
 
-// impl Into<u32> for MediaEntityFlags {
-//     fn into(self) -> u32 {
-//         self.
-//             Default => media::MEDIA_ENT_FL_DEFAULT,
-//             Connector => media::MEDIA_ENT_FL_CONNECTOR,
-//         }
-//     }
-// }
-
 #[derive(Debug, Copy, Clone, PartialEq, PartialOrd, Eq, Ord, From, Into)]
 pub struct EntityId(u32);
 
