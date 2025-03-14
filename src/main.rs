@@ -8,7 +8,6 @@ fn main() {
         Err(err) => println!("err: {}", err),
     }
     let (_info_fd, info) = info.unwrap();
-    assert!(media::MediaEntity::has_flags(info.media_version()));
     let topology = media::MediaTopology::new(&info, path);
     match &topology {
         Ok((fd, topology)) => println!("topology: ({:?},{:?})", fd, topology),
