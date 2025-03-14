@@ -8,6 +8,7 @@ use std::path::Path;
 use linux_media_sys as media;
 
 use crate::error;
+use crate::ioctl;
 use crate::version::*;
 
 #[derive(Clone, PartialEq, PartialOrd, Eq, Ord)]
@@ -53,13 +54,7 @@ impl MediaDeviceInfo {
 
         let info = unsafe {
             let mut info: media::media_device_info = std::mem::zeroed();
-            let ret = libc::ioctl(fd.as_raw_fd(), media::MEDIA_IOC_DEVICE_INFO, &mut info);
-            if ret != 0 {
-                return Err(error::Error::Ioctl {
-                    code: ret,
-                    api: media::MEDIA_IOC_DEVICE_INFO,
-                });
-            }
+            ioctl!(fd, media::MEDIA_IOC_DEVICE_INFO, &mut info)?;
             info
         };
 

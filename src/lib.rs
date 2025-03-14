@@ -1,4 +1,5 @@
 pub mod error;
+mod ioctl;
 pub mod media_device_info;
 pub mod media_entity;
 pub mod media_interface;

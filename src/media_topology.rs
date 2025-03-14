@@ -6,6 +6,7 @@ use std::path::{Path, PathBuf};
 use linux_media_sys as media;
 
 use crate::error::{self, Result};
+use crate::ioctl;
 use crate::media_device_info::MediaDeviceInfo;
 use crate::media_entity::MediaEntity;
 use crate::media_interface::MediaInterface;
@@ -47,19 +48,9 @@ impl MediaTopology {
             .open(&path)
             .map_err(|err| error::trap_io_error(err, path.clone()))?;
         let owned_fd = OwnedFd::from(file);
-        let mut topology = unsafe {
+        let mut topology: media::media_v2_topology = unsafe {
             let mut topology: media::media_v2_topology = std::mem::zeroed();
-            let ret = libc::ioctl(
-                owned_fd.as_raw_fd(),
-                media::MEDIA_IOC_G_TOPOLOGY,
-                &mut topology,
-            );
-            if ret < 0 {
-                return Err(error::Error::Ioctl {
-                    code: ret,
-                    api: media::MEDIA_IOC_G_TOPOLOGY,
-                });
-            }
+            ioctl!(owned_fd, media::MEDIA_IOC_G_TOPOLOGY, &mut topology)?;
             topology
         };
         let version = topology.topology_version;
@@ -76,22 +67,11 @@ impl MediaTopology {
         let pads: Vec<media::media_v2_pad> = zeros_vec(topology.num_pads);
         topology.ptr_pads = pads.as_ptr() as media::__u64;
 
-        let ret = unsafe {
+        unsafe {
             // Second ioctl call with allocated space to
             // populate the entities/interface/links/pads array.
-            libc::ioctl(
-                owned_fd.as_raw_fd(),
-                media::MEDIA_IOC_G_TOPOLOGY,
-                &mut topology,
-            )
+            ioctl!(owned_fd, media::MEDIA_IOC_G_TOPOLOGY, &mut topology)?;
         };
-        if ret < 0 {
-            return Err(error::Error::Ioctl {
-                code: ret,
-                api: media::MEDIA_IOC_G_TOPOLOGY,
-            });
-        }
-
         assert_eq!(version, { topology.topology_version });
 
         Ok((
