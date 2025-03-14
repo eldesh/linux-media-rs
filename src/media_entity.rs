@@ -160,11 +160,11 @@ pub struct EntityId(u32);
 
 #[derive(Debug, Clone, PartialEq, PartialOrd, Eq, Ord)]
 pub struct MediaEntity {
-    id: EntityId,
-    name: String,
-    function: MediaEntityFunctions,
-    /// Entity flags, see Media entity flags for details. Only valid if MEDIA_V2_ENTITY_HAS_FLAGS(media_version) returns true. The media_version is defined in struct media_device_info and can be retrieved using ioctl MEDIA_IOC_DEVICE_INFO.
-    r#type: Option<MediaEntityType>,
+    pub id: EntityId,
+    pub name: String,
+    pub function: MediaEntityFunctions,
+    /// Type of the entity.
+    pub r#type: Option<MediaEntityType>,
 }
 
 impl MediaEntity {
