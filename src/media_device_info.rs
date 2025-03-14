@@ -10,32 +10,35 @@ use linux_media_sys as media;
 use crate::error;
 use crate::media_version::*;
 
+#[derive(Clone, PartialEq, PartialOrd, Eq, Ord)]
 pub struct MediaDeviceInfo {
-    device_node: PathBuf,
-    fd: OwnedFd,
-    info: media::media_device_info,
+    pub driver: String,
+    pub model: String,
+    pub serial: String,
+    pub bus_info: String,
+    pub media_version: MediaVersion,
+    pub hw_revision: u32,
+    pub driver_version: MediaVersion,
 }
 
 impl fmt::Debug for MediaDeviceInfo {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
-            "MediaDeviceInfo {{ device_node: {}, fd: {:?}, info: {{ driver: \"{}\", model: \"{}\", serial: \"{}\", bus_info: \"{}\", media_version: {}, hw_revision: 0x{:02X}, driver_version: {} }} }}",
-            self.device_node.display(),
-            self.fd,
-            self.driver(),
-            self.model(),
-            self.serial(),
-            self.bus_info(),
-            self.media_version(),
-            self.hw_revision(),
-            self.driver_version(),
+            "MediaDeviceInfo {{ driver: \"{}\", model: \"{}\", serial: \"{}\", bus_info: \"{}\", media_version: {}, hw_revision: 0x{:02X}, driver_version: {} }}",
+            self.driver,
+            self.model,
+            self.serial,
+            self.bus_info,
+            self.media_version,
+            self.hw_revision,
+            self.driver_version,
         )
     }
 }
 
 impl MediaDeviceInfo {
-    pub fn new<P>(path: P) -> error::Result<Self>
+    pub fn from_path<P>(path: P) -> error::Result<(OwnedFd, Self)>
     where
         P: AsRef<Path>,
     {
@@ -61,50 +64,67 @@ impl MediaDeviceInfo {
             info
         };
 
-        Ok(Self {
-            device_node,
-            fd,
-            info,
-        })
+        Ok((fd, info.into()))
     }
 
     pub fn driver(&self) -> &str {
-        CStr::from_bytes_until_nul(&self.info.driver)
-            .unwrap()
-            .to_str()
-            .unwrap()
+        &self.driver
     }
 
     pub fn model(&self) -> &str {
-        CStr::from_bytes_until_nul(&self.info.model)
-            .unwrap()
-            .to_str()
-            .unwrap()
+        &self.model
     }
 
     pub fn serial(&self) -> &str {
-        CStr::from_bytes_until_nul(&self.info.serial)
-            .unwrap()
-            .to_str()
-            .unwrap()
+        &self.serial
     }
 
     pub fn bus_info(&self) -> &str {
-        CStr::from_bytes_until_nul(&self.info.bus_info)
-            .unwrap()
-            .to_str()
-            .unwrap()
+        &self.bus_info
     }
 
     pub fn media_version(&self) -> MediaVersion {
-        self.info.media_version.into()
+        self.media_version.clone()
     }
 
     pub fn hw_revision(&self) -> u32 {
-        self.info.hw_revision
+        self.hw_revision
     }
 
     pub fn driver_version(&self) -> MediaVersion {
-        self.info.driver_version.into()
+        self.driver_version.clone()
+    }
+}
+
+impl From<media::media_device_info> for MediaDeviceInfo {
+    fn from(info: media::media_device_info) -> Self {
+        let driver = CStr::from_bytes_until_nul(&info.driver)
+            .unwrap()
+            .to_string_lossy()
+            .to_string();
+        let model = CStr::from_bytes_until_nul(&info.model)
+            .unwrap()
+            .to_string_lossy()
+            .to_string();
+        let serial = CStr::from_bytes_until_nul(&info.serial)
+            .unwrap()
+            .to_string_lossy()
+            .to_string();
+        let bus_info = CStr::from_bytes_until_nul(&info.bus_info)
+            .unwrap()
+            .to_string_lossy()
+            .to_string();
+        let media_version = info.media_version.into();
+        let hw_revision = info.hw_revision;
+        let driver_version = info.driver_version.into();
+        Self {
+            driver,
+            model,
+            serial,
+            bus_info,
+            media_version,
+            hw_revision,
+            driver_version,
+        }
     }
 }
