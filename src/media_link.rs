@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use derive_more::{Display, From, Into};
+use derive_more::{From, Into};
 use linux_media_sys as media;
 
 use crate::error;

@@ -3,7 +3,7 @@ use std::fmt;
 use std::fs::OpenOptions;
 use std::os::fd::{AsRawFd, OwnedFd};
 use std::os::unix::fs::OpenOptionsExt;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 use linux_media_sys as media;
 
@@ -43,13 +43,12 @@ impl MediaDeviceInfo {
         P: AsRef<Path>,
     {
         let path = path.as_ref();
-        let device_node = path.to_path_buf();
         let fd: OwnedFd = OpenOptions::new()
             .read(true)
             .write(true)
             .custom_flags(libc::O_CLOEXEC)
             .open(path)
-            .map_err(|err| error::trap_io_error(err, device_node.clone()))?
+            .map_err(|err| error::trap_io_error(err, path.to_path_buf()))?
             .into();
 
         let info = unsafe {
