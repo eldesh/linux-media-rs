@@ -23,6 +23,8 @@ pub enum Error {
     EntityFlagsParseError { from: u32 },
     /// parse error as [`MediaPadFlags`]
     PadFlagsParseError { from: u32 },
+    /// parse error as [`MediaLinkType`]
+    LinkTypeParseError { from: u32 },
 }
 
 impl fmt::Display for Error {
@@ -43,6 +45,9 @@ impl fmt::Display for Error {
             }
             PadFlagsParseError { from, .. } => {
                 write!(f, "pad flags parse error: {}", from)
+            }
+            LinkTypeParseError { from, .. } => {
+                write!(f, "link type parse error: {}", from)
             }
         }
     }

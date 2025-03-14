@@ -1,0 +1,117 @@
+use std::marker::PhantomData;
+
+use derive_more::{Display, From, Into};
+use linux_media_sys as media;
+
+use crate::error;
+use crate::media_entity::EntityId;
+use crate::media_interface::InterfaceId;
+use crate::media_pad::PadId;
+
+#[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Eq, Ord, From, Into)]
+pub struct LinkId(u32);
+
+#[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Eq, Ord)]
+pub enum MediaLinkProperty {
+    /// The link is enabled and can be used to transfer media data. When two or more links target a sink pad, only one of them can be enabled at a time.
+    Enabled,
+    /// The link enabled state can’t be modified at runtime. An immutable link is always enabled.
+    Immutable,
+    /// The link enabled state can be modified during streaming. This flag is set by drivers and is read-only for applications.
+    Dynamic,
+}
+
+impl TryFrom<u32> for MediaLinkProperty {
+    type Error = error::Error;
+    fn try_from(v: u32) -> error::Result<Self> {
+        use MediaLinkProperty::*;
+        if v & media::MEDIA_LNK_FL_ENABLED != 0 {
+            Ok(Enabled)
+        } else if v & media::MEDIA_LNK_FL_IMMUTABLE != 0 {
+            Ok(Immutable)
+        } else if v & media::MEDIA_LNK_FL_DYNAMIC != 0 {
+            Ok(Dynamic)
+        } else {
+            Err(error::Error::LinkTypeParseError { from: v })
+        }
+    }
+}
+
+impl Into<u32> for MediaLinkProperty {
+    fn into(self) -> u32 {
+        use MediaLinkProperty::*;
+        match self {
+            Enabled => media::MEDIA_LNK_FL_ENABLED,
+            Immutable => media::MEDIA_LNK_FL_IMMUTABLE,
+            Dynamic => media::MEDIA_LNK_FL_DYNAMIC,
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, PartialOrd, Eq, Ord)]
+pub struct PadIdOr<T>(u32, PhantomData<T>);
+
+#[derive(Debug, Clone, PartialEq, PartialOrd, Eq, Ord)]
+pub enum LinkType {
+    /// MEDIA_LNK_FL_DATA_LINK
+    /// On pad to pad links: unique IDs for the source/sink pad.
+    DataLink { source_id: PadId, sink_id: PadId },
+    /// MEDIA_LNK_FL_INTERFACE_LINK
+    /// On interface to entity links: unique IDs for the interface/entity.
+    InterfaceLink {
+        source_id: InterfaceId,
+        sink_id: EntityId,
+    },
+    /// MEDIA_LNK_FL_ANCILLARY_LINK for links that represent a physical relationship between two entities. The link may or may not be immutable, so applications must not assume either case.
+    AncillaryLink {
+        source_id: PadIdOr<InterfaceId>,
+        sink_id: PadIdOr<EntityId>,
+    },
+}
+
+#[derive(Debug, Clone, PartialEq, PartialOrd, Eq, Ord)]
+pub struct MediaLink {
+    /// Unique ID for the link. Do not expect that the ID will always be the same for each instance of the device. In other words, do not hardcode link IDs in an application.
+    pub id: LinkId,
+    pub r#type: LinkType,
+    pub property: MediaLinkProperty,
+}
+
+impl MediaLink {
+    pub fn new(id: LinkId, r#type: LinkType, property: MediaLinkProperty) -> Self {
+        Self {
+            id,
+            r#type,
+            property,
+        }
+    }
+
+    pub fn id(&self) -> LinkId {
+        self.id
+    }
+}
+
+impl From<media::media_v2_link> for MediaLink {
+    fn from(link: media::media_v2_link) -> Self {
+        let r#type = match link.flags & media::MEDIA_LNK_FL_LINK_TYPE {
+            media::MEDIA_LNK_FL_DATA_LINK => LinkType::DataLink {
+                source_id: link.source_id.into(),
+                sink_id: link.sink_id.into(),
+            },
+            media::MEDIA_LNK_FL_INTERFACE_LINK => LinkType::InterfaceLink {
+                source_id: link.source_id.into(),
+                sink_id: link.sink_id.into(),
+            },
+            media::MEDIA_LNK_FL_ANCILLARY_LINK => LinkType::AncillaryLink {
+                source_id: PadIdOr(link.source_id, PhantomData),
+                sink_id: PadIdOr(link.sink_id, PhantomData),
+            },
+            other => unreachable!("link type should not be there: {}", other),
+        };
+        Self {
+            id: link.id.into(),
+            r#type,
+            property: link.flags.try_into().unwrap(),
+        }
+    }
+}

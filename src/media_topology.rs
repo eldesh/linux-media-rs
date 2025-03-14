@@ -8,10 +8,8 @@ use linux_media_sys as media;
 use crate::error::{self, Result};
 use crate::media_entity::MediaEntity;
 use crate::media_interface::MediaInterface;
+use crate::media_link::MediaLink;
 use crate::media_pad::MediaPad;
-
-#[derive(Debug, Clone)]
-pub struct MediaLink();
 
 #[derive(Debug, Clone)]
 pub struct MediaTopology {
@@ -101,7 +99,7 @@ impl MediaTopology {
                 entities: entities.into_iter().map(Into::into).collect(),
                 interfaces: interfaces.into_iter().map(Into::into).collect(),
                 pads: pads.into_iter().map(Into::into).collect(),
-                links: vec![],
+                links: links.into_iter().map(Into::into).collect(),
             },
         ))
     }
