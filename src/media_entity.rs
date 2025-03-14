@@ -4,7 +4,7 @@ use derive_more::{Display, From, Into};
 use linux_media_sys as media;
 
 use crate::error;
-use crate::MediaVersion;
+use crate::Version;
 
 #[derive(Debug, Clone, PartialEq, PartialOrd, Eq, Ord)]
 pub enum MediaEntityFunctions {
@@ -169,7 +169,7 @@ pub struct MediaEntity {
 
 impl MediaEntity {
     pub fn new(
-        ver: MediaVersion,
+        ver: Version,
         id: EntityId,
         name: &str,
         function: MediaEntityFunctions,
@@ -183,7 +183,7 @@ impl MediaEntity {
         }
     }
 
-    pub fn has_flags(version: MediaVersion) -> bool {
+    pub fn has_flags(version: Version) -> bool {
         media::MEDIA_V2_ENTITY_HAS_FLAGS(Into::<u32>::into(version).into())
     }
 
@@ -200,7 +200,7 @@ impl From<media::media_v2_entity> for MediaEntity {
             .to_string_lossy()
             .to_string();
         let function: MediaEntityFunctions = entity.function.try_into().unwrap();
-        // TODO: take MediaVersion into account.
+        // TODO: take Version into account.
         let flags: Option<MediaEntityFlags> = entity.flags.try_into().ok();
         Self {
             id,

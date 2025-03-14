@@ -2,13 +2,13 @@ use std::fmt;
 
 /// Version information wrapper formatted with `KERNEL_VERSION` macro.
 #[derive(Debug, Clone, PartialEq, PartialOrd, Eq, Ord)]
-pub struct MediaVersion {
+pub struct Version {
     pub major: u8,
     pub minor: u8,
     pub patch: u8,
 }
 
-impl From<u32> for MediaVersion {
+impl From<u32> for Version {
     /// Convert to u32.
     ///
     /// 17..24th bits, 9..16th bits, 0..8th bits represents major, minor and patch version respectively.
@@ -24,8 +24,8 @@ impl From<u32> for MediaVersion {
     }
 }
 
-impl Into<u32> for MediaVersion {
-    fn into(self: MediaVersion) -> u32 {
+impl Into<u32> for Version {
+    fn into(self: Version) -> u32 {
         let Self {
             major,
             minor,
@@ -35,7 +35,7 @@ impl Into<u32> for MediaVersion {
     }
 }
 
-impl fmt::Display for MediaVersion {
+impl fmt::Display for Version {
     /// Version is formatted to "{major}.{minor}.{patch}".
     /// Where the each component is formatted as decimal number.
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -43,7 +43,7 @@ impl fmt::Display for MediaVersion {
     }
 }
 
-impl MediaVersion {
+impl Version {
     pub fn new(major: u8, minor: u8, patch: u8) -> Self {
         Self {
             major,

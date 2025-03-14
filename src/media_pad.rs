@@ -3,7 +3,7 @@ use linux_media_sys as media;
 
 use crate::error;
 use crate::media_entity::EntityId;
-use crate::media_version::MediaVersion;
+use crate::version::Version;
 
 #[derive(Debug, Copy, Clone, PartialEq, PartialOrd, Eq, Ord, From, Into, Display)]
 pub struct PadId(u32);
@@ -63,7 +63,7 @@ pub struct MediaPad {
 }
 
 impl MediaPad {
-    pub fn has_flags(version: MediaVersion) -> bool {
+    pub fn has_flags(version: Version) -> bool {
         media::MEDIA_V2_PAD_HAS_INDEX(Into::<u32>::into(version).into())
     }
 }
@@ -74,7 +74,7 @@ impl From<media::media_v2_pad> for MediaPad {
             id: pad.id.into(),
             entity_id: pad.entity_id.into(),
             flags: pad.flags.try_into().unwrap(),
-            // TODO: take MediaVersion into account.
+            // TODO: take Version into account.
             index: Some(pad.index as usize),
         }
     }

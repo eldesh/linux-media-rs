@@ -8,7 +8,7 @@ use std::path::{Path, PathBuf};
 use linux_media_sys as media;
 
 use crate::error;
-use crate::media_version::*;
+use crate::version::*;
 
 #[derive(Clone, PartialEq, PartialOrd, Eq, Ord)]
 pub struct MediaDeviceInfo {
@@ -16,9 +16,9 @@ pub struct MediaDeviceInfo {
     pub model: String,
     pub serial: String,
     pub bus_info: String,
-    pub media_version: MediaVersion,
+    pub media_version: Version,
     pub hw_revision: u32,
-    pub driver_version: MediaVersion,
+    pub driver_version: Version,
 }
 
 impl fmt::Debug for MediaDeviceInfo {
@@ -83,7 +83,7 @@ impl MediaDeviceInfo {
         &self.bus_info
     }
 
-    pub fn media_version(&self) -> MediaVersion {
+    pub fn media_version(&self) -> Version {
         self.media_version.clone()
     }
 
@@ -91,7 +91,7 @@ impl MediaDeviceInfo {
         self.hw_revision
     }
 
-    pub fn driver_version(&self) -> MediaVersion {
+    pub fn driver_version(&self) -> Version {
         self.driver_version.clone()
     }
 }
