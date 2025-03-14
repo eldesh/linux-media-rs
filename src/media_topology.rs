@@ -92,4 +92,17 @@ impl MediaTopology {
             },
         ))
     }
+
+    pub fn entities(&self) -> &[MediaEntity] {
+        self.entities.as_ref()
+    }
+    pub fn interfaces(&self) -> &[MediaInterface] {
+        self.interfaces.as_ref()
+    }
+    pub fn pads(&self) -> &[MediaPad] {
+        self.pads.as_ref()
+    }
+    pub fn links(&self) -> &[MediaLink] {
+        self.links.as_ref()
+    }
 }

@@ -1,5 +1,8 @@
+use std::os::fd::{AsRawFd, BorrowedFd};
+
 use linux_media_sys as media;
 
+use crate::error;
 use crate::ioctl;
 use crate::{EntityId, MediaEntity, MediaEntityFlags, MediaEntityFunctions, Version};
 
@@ -20,28 +23,33 @@ pub struct MediaEntityDesc {
     links: u16,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Eq, Ord)]
-pub struct MediaEntityIter {
+#[derive(Debug)]
+pub struct MediaEntityIter<'a> {
+    fd: BorrowedFd<'a>,
     media_version: Version,
     id: EntityId,
 }
 
-impl MediaEntityIter {
-    pub fn new(version: Version, id: EntityId) -> Self {
-        Self { version, id }
+impl<'a> MediaEntityIter<'a> {
+    pub fn new(fd: BorrowedFd<'a>, media_version: Version, id: EntityId) -> Self {
+        Self {
+            fd,
+            media_version,
+            id,
+        }
     }
 }
 
 /// Iterates over all MediaEntities with an ID greater than the stored ID.
-impl Iterator for MediaEntityIter {
+impl<'a> Iterator for MediaEntityIter<'a> {
     type Item = MediaEntity;
     fn next(&mut self) -> Option<Self::Item> {
         unsafe {
-            let mut desc: media::media_entity_desc = std::mem::zeroes();
-            desc.id = self.id.into() | media::MEDIA_ENT_ID_FLAG_NEXT;
-            if ioctl!(fd, media::MEDIA_IOC_ENUM_ENTITIES, &mut desc).is_ok() {
+            let mut desc: media::media_entity_desc = std::mem::zeroed();
+            desc.id = Into::<u32>::into(self.id) | media::MEDIA_ENT_ID_FLAG_NEXT;
+            if ioctl!(self.fd, media::MEDIA_IOC_ENUM_ENTITIES, &mut desc).is_ok() {
                 self.id = desc.id.into();
-                Some(MediaEntity::from_desc(self.version, desc))
+                Some(MediaEntity::from_raw_desc(self.media_version, desc))
             } else {
                 None
             }
