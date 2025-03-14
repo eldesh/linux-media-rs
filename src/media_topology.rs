@@ -81,7 +81,7 @@ impl MediaTopology {
                 version: topology.topology_version,
                 entities: entities
                     .into_iter()
-                    .map(|ent| MediaEntity::from(info.media_version, ent))
+                    .map(|ent| MediaEntity::from_raw_entity(info.media_version, ent))
                     .collect(),
                 interfaces: interfaces.into_iter().map(Into::into).collect(),
                 pads: pads

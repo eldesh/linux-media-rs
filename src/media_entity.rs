@@ -182,7 +182,7 @@ impl MediaEntity {
         &self.name
     }
 
-    pub fn from(version: Version, entity: media::media_v2_entity) -> Self {
+    pub fn from_raw_entity(version: Version, entity: media::media_v2_entity) -> Self {
         let id = EntityId::from(entity.id);
         let name = CStr::from_bytes_until_nul(&entity.name)
             .unwrap()
@@ -191,6 +191,26 @@ impl MediaEntity {
         let function: MediaEntityFunctions = entity.function.try_into().unwrap();
         let flags: Option<MediaEntityFlags> = if Self::has_flags(version) {
             Some(entity.flags.try_into().unwrap())
+        } else {
+            None
+        };
+        Self {
+            id,
+            name,
+            function,
+            flags,
+        }
+    }
+
+    pub fn from_raw_desc(version: Version, desc: media::media_entity_desc) -> Self {
+        let id = EntityId::from(desc.id);
+        let name = CStr::from_bytes_until_nul(&desc.name)
+            .unwrap()
+            .to_string_lossy()
+            .to_string();
+        let function: MediaEntityFunctions = desc.type_.try_into().unwrap();
+        let flags: Option<MediaEntityFlags> = if Self::has_flags(version) {
+            Some(desc.flags.try_into().unwrap())
         } else {
             None
         };
