@@ -9,9 +9,9 @@ pub struct InterfaceId(u32);
 
 #[derive(Debug, Clone, PartialEq, PartialOrd, Eq, Ord)]
 pub struct MediaInterface {
-    id: InterfaceId,
-    r#type: MediaInterfaceType,
-    devnode: MediaIntfDevnode,
+    pub id: InterfaceId,
+    pub r#type: MediaInterfaceType,
+    pub devnode: MediaIntfDevnode,
 }
 
 impl From<media::media_v2_interface> for MediaInterface {

@@ -200,6 +200,7 @@ impl From<media::media_v2_entity> for MediaEntity {
             .to_string_lossy()
             .to_string();
         let function: MediaEntityFunctions = entity.function.try_into().unwrap();
+        // TODO: take MediaVersion into account.
         let flags: Option<MediaEntityFlags> = entity.flags.try_into().ok();
         Self {
             id,
