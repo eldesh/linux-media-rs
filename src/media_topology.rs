@@ -6,13 +6,16 @@ use std::path::{Path, PathBuf};
 use linux_media_sys as media;
 
 use crate::error::{self, Result};
+use crate::media_device_info::MediaDeviceInfo;
 use crate::media_entity::MediaEntity;
 use crate::media_interface::MediaInterface;
 use crate::media_link::MediaLink;
 use crate::media_pad::MediaPad;
 
-#[derive(Debug, Clone)]
+/// Wrapper of media_v2_topology.
+#[derive(Debug, Clone, PartialEq, PartialOrd, Eq, Ord)]
 pub struct MediaTopology {
+    /// Device file from which topology information is read
     path: PathBuf,
     version: u64,
     entities: Vec<MediaEntity>,
@@ -32,7 +35,7 @@ where
 
 impl MediaTopology {
     /// Construct topology from the given device file such like: /dev/mediaX
-    pub fn new<P>(path: P) -> Result<(OwnedFd, Self)>
+    pub fn new<P>(info: &MediaDeviceInfo, path: P) -> Result<(OwnedFd, Self)>
     where
         P: AsRef<Path>,
     {
@@ -96,7 +99,10 @@ impl MediaTopology {
             Self {
                 path,
                 version: topology.topology_version,
-                entities: entities.into_iter().map(Into::into).collect(),
+                entities: entities
+                    .into_iter()
+                    .map(|ent| MediaEntity::from(info.media_version, ent))
+                    .collect(),
                 interfaces: interfaces.into_iter().map(Into::into).collect(),
                 pads: pads.into_iter().map(Into::into).collect(),
                 links: links.into_iter().map(Into::into).collect(),

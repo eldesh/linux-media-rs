@@ -1,6 +1,7 @@
 use std::ffi::CStr;
 
-use derive_more::{Display, From, Into};
+use bitflags;
+use derive_more::{From, Into};
 use linux_media_sys as media;
 
 use crate::error;
@@ -122,90 +123,91 @@ impl TryFrom<u32> for MediaEntityFunctions {
     }
 }
 
-/// Media entity flags
-#[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Eq, Ord, Display)]
-pub enum MediaEntityType {
-    /// Default entity for its type. Used to discover the default audio, VBI and video devices, the default camera sensor, etc.
-    #[display("Default")]
-    Default,
-    /// The entity represents a connector.
-    #[display("Connector")]
-    Connector,
+bitflags::bitflags! {
+    /// Media entity flags
+#[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Eq, Ord)]
+    pub struct MediaEntityFlags: u32 {
+        /// Default entity for its type. Used to discover the default audio, VBI and video devices, the default camera sensor, etc.
+        const Default = media::MEDIA_ENT_FL_DEFAULT;
+        /// The entity represents a connector.
+        const Connector = media::MEDIA_ENT_FL_CONNECTOR;
+    }
 }
 
-impl TryFrom<u32> for MediaEntityType {
+impl TryFrom<u32> for MediaEntityFlags {
     type Error = error::Error;
     fn try_from(v: u32) -> error::Result<Self> {
-        use MediaEntityType::*;
-        match v {
-            media::MEDIA_ENT_FL_DEFAULT => Ok(Default),
-            media::MEDIA_ENT_FL_CONNECTOR => Ok(Connector),
-            other => Err(error::Error::EntityTypeParseError { from: other }),
-        }
+        MediaEntityFlags::from_bits(v)
+            .ok_or_else(|| error::Error::EntityFlagsParseError { from: v })
     }
 }
 
-impl Into<u32> for MediaEntityType {
-    fn into(self) -> u32 {
-        use MediaEntityType::*;
-        match self {
-            Default => media::MEDIA_ENT_FL_DEFAULT,
-            Connector => media::MEDIA_ENT_FL_CONNECTOR,
-        }
-    }
-}
+// impl Into<u32> for MediaEntityFlags {
+//     fn into(self) -> u32 {
+//         self.
+//             Default => media::MEDIA_ENT_FL_DEFAULT,
+//             Connector => media::MEDIA_ENT_FL_CONNECTOR,
+//         }
+//     }
+// }
 
 #[derive(Debug, Copy, Clone, PartialEq, PartialOrd, Eq, Ord, From, Into)]
 pub struct EntityId(u32);
 
 #[derive(Debug, Clone, PartialEq, PartialOrd, Eq, Ord)]
 pub struct MediaEntity {
-    pub id: EntityId,
-    pub name: String,
-    pub function: MediaEntityFunctions,
-    /// Type of the entity.
-    pub r#type: Option<MediaEntityType>,
+    id: EntityId,
+    name: String,
+    function: MediaEntityFunctions,
+    /// media entity flags.
+    /// Only `Some` if `has_flags` return true.
+    flags: Option<MediaEntityFlags>,
 }
 
 impl MediaEntity {
-    pub fn new(
+    fn new(
         id: EntityId,
         name: &str,
         function: MediaEntityFunctions,
-        r#type: Option<MediaEntityType>,
+        flags: Option<MediaEntityFlags>,
     ) -> Self {
         Self {
             id,
             name: name.to_owned(),
             function,
-            r#type,
+            flags,
         }
     }
 
     pub fn has_flags(version: Version) -> bool {
-        media::MEDIA_V2_ENTITY_HAS_FLAGS(Into::<u32>::into(version).into())
+        media::MEDIA_V2_ENTITY_HAS_FLAGS(<Version as Into<u32>>::into(version).into())
     }
 
     pub fn id(&self) -> EntityId {
         self.id
     }
-}
 
-impl From<media::media_v2_entity> for MediaEntity {
-    fn from(entity: media::media_v2_entity) -> Self {
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    pub fn from(version: Version, entity: media::media_v2_entity) -> Self {
         let id = EntityId::from(entity.id);
         let name = CStr::from_bytes_until_nul(&entity.name)
             .unwrap()
             .to_string_lossy()
             .to_string();
         let function: MediaEntityFunctions = entity.function.try_into().unwrap();
-        // TODO: take Version into account.
-        let r#type: Option<MediaEntityType> = entity.flags.try_into().ok();
+        let flags: Option<MediaEntityFlags> = if Self::has_flags(version) {
+            Some(entity.flags.try_into().unwrap())
+        } else {
+            None
+        };
         Self {
             id,
             name,
             function,
-            r#type,
+            flags,
         }
     }
 }

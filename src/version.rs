@@ -1,7 +1,7 @@
 use std::fmt;
 
 /// Version information wrapper formatted with `KERNEL_VERSION` macro.
-#[derive(Debug, Clone, PartialEq, PartialOrd, Eq, Ord)]
+#[derive(Debug, Copy, Clone, PartialEq, PartialOrd, Eq, Ord)]
 pub struct Version {
     pub major: u8,
     pub minor: u8,

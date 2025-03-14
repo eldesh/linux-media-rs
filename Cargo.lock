@@ -135,6 +135,7 @@ dependencies = [
 name = "linux-media"
 version = "0.1.0"
 dependencies = [
+ "bitflags",
  "derive_more",
  "libc",
  "linux-media-sys",

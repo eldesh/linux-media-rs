@@ -20,7 +20,7 @@ pub enum Error {
     /// parse error as [`crate::MediaEntityFunctions`]
     EntityFunctionsParseError { from: u32 },
     /// parse error as [`crate::MediaEntityFlags`]
-    EntityTypeParseError { from: u32 },
+    EntityFlagsParseError { from: u32 },
     /// parse error as [`crate::MediaPadFlags`]
     PadFlagsParseError { from: u32 },
     /// parse error as [`crate::MediaLinkType`]
@@ -40,8 +40,8 @@ impl fmt::Display for Error {
             EntityFunctionsParseError { from, .. } => {
                 write!(f, "entity functions parse error: {}", from)
             }
-            EntityTypeParseError { from, .. } => {
-                write!(f, "entity type parse error: {}", from)
+            EntityFlagsParseError { from, .. } => {
+                write!(f, "entity flags parse error: {}", from)
             }
             PadFlagsParseError { from, .. } => {
                 write!(f, "pad flags parse error: {}", from)
