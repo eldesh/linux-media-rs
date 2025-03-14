@@ -17,6 +17,10 @@ pub enum Error {
     FileNotFound { path: PathBuf, source: io::Error },
     /// parse error as [`MediaInterfaceType`]
     InterfaceTypeParseError { from: u32 },
+    /// parse error as [`MediaEntityFunctions`]
+    EntityFunctionsParseError { from: u32 },
+    /// parse error as [`MediaEntityFlags`]
+    EntityFlagsParseError { from: u32 },
 }
 
 impl fmt::Display for Error {
@@ -28,6 +32,12 @@ impl fmt::Display for Error {
             FileNotFound { path, .. } => write!(f, "file not found: {}", path.display()),
             InterfaceTypeParseError { from, .. } => {
                 write!(f, "interface type parse error: {}", from)
+            }
+            EntityFunctionsParseError { from, .. } => {
+                write!(f, "entity functions parse error: {}", from)
+            }
+            EntityFlagsParseError { from, .. } => {
+                write!(f, "entity flags parse error: {}", from)
             }
         }
     }

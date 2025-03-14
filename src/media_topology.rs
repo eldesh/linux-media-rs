@@ -1,4 +1,4 @@
-use std::fs::{self, File, OpenOptions};
+use std::fs::OpenOptions;
 use std::os::fd::{AsRawFd, OwnedFd};
 use std::os::unix::fs::OpenOptionsExt;
 use std::path::{Path, PathBuf};
@@ -6,12 +6,8 @@ use std::path::{Path, PathBuf};
 use linux_media_sys as media;
 
 use crate::error::{self, Result};
-
-#[derive(Debug)]
-pub struct MediaEntity();
-
-#[derive(Debug)]
-pub struct MediaInterface();
+use crate::media_entity::MediaEntity;
+use crate::media_interface::MediaInterface;
 
 #[derive(Debug)]
 pub struct MediaPad();
@@ -82,7 +78,8 @@ impl MediaTopology {
         topology.ptr_pads = pads.as_ptr() as media::__u64;
 
         let ret = unsafe {
-            // Second ioctl call with allocated space to populate the entities/interface/links/pads array.
+            // Second ioctl call with allocated space to
+            // populate the entities/interface/links/pads array.
             libc::ioctl(
                 owned_fd.as_raw_fd(),
                 media::MEDIA_IOC_G_TOPOLOGY,
@@ -103,8 +100,8 @@ impl MediaTopology {
             Self {
                 path,
                 version: topology.topology_version,
-                entities: vec![],
-                interfaces: vec![],
+                entities: entities.into_iter().map(Into::into).collect(),
+                interfaces: interfaces.into_iter().map(Into::into).collect(),
                 pads: vec![],
                 links: vec![],
             },
