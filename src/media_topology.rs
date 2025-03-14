@@ -104,7 +104,10 @@ impl MediaTopology {
                     .map(|ent| MediaEntity::from(info.media_version, ent))
                     .collect(),
                 interfaces: interfaces.into_iter().map(Into::into).collect(),
-                pads: pads.into_iter().map(Into::into).collect(),
+                pads: pads
+                    .into_iter()
+                    .map(|pad| MediaPad::from(info.media_version, pad))
+                    .collect(),
                 links: links.into_iter().map(Into::into).collect(),
             },
         ))

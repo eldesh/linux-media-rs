@@ -56,26 +56,30 @@ impl Into<u32> for MediaPadFlags {
 
 #[derive(Debug, Clone, PartialEq, PartialOrd, Eq, Ord)]
 pub struct MediaPad {
+    /// Unique ID for the pad. Do not expect that the ID will always be the same for each instance of the device. In other words, do not hardcode pad IDs in an application.
     pub id: PadId,
+    /// Unique ID for the entity where this pad belongs.
     pub entity_id: EntityId,
     pub flags: MediaPadFlags,
+    /// Pad index, starts at 0. Only valid if hash_index(media_version) returns true.
     pub index: Option<usize>,
 }
 
 impl MediaPad {
-    pub fn has_flags(version: Version) -> bool {
-        media::MEDIA_V2_PAD_HAS_INDEX(Into::<u32>::into(version).into())
+    pub fn has_index(media_version: Version) -> bool {
+        media::MEDIA_V2_PAD_HAS_INDEX(Into::<u32>::into(media_version).into())
     }
-}
 
-impl From<media::media_v2_pad> for MediaPad {
-    fn from(pad: media::media_v2_pad) -> Self {
+    pub fn from(version: Version, pad: media::media_v2_pad) -> Self {
         Self {
             id: pad.id.into(),
             entity_id: pad.entity_id.into(),
             flags: pad.flags.try_into().unwrap(),
-            // TODO: take Version into account.
-            index: Some(pad.index as usize),
+            index: if Self::has_index(version) {
+                Some(pad.index as usize)
+            } else {
+                None
+            },
         }
     }
 }
