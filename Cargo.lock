@@ -143,9 +143,9 @@ dependencies = [
 
 [[package]]
 name = "linux-media-sys"
-version = "0.2.0"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9b2e8de766651745325efe82cf2c1cfd09d5abf46733e4e95ea6fb5499903755"
+checksum = "72e437a7f6ce5404aba60d56dd7ad6df93f1dfc7be2525253d00a1cd64e10218"
 dependencies = [
  "bindgen",
  "libc",

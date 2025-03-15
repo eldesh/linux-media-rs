@@ -15,7 +15,7 @@ path = "src/main.rs"
 
 
 [dependencies]
-linux-media-sys = "0.2.0"
+linux-media-sys = "0.3.0"
 bitflags = "2.9.0"
 libc = "0.2.170"
 derive_more = { version = "2.0.1", features = ["full"] }
