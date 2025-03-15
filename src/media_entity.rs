@@ -11,6 +11,8 @@ use crate::Version;
 pub enum MediaEntityFunctions {
     /// Unknown entity. That generally indicates that a driver didn’t initialize properly the entity, which is a Kernel bug
     Unknown,
+    /// Unknown entity. That generally indicates that a driver didn’t initialize properly the entity, which is a Kernel bug
+    V4L2SubdevUnknown,
     /// Data streaming input and/or output entity.
     IoV4L,
     /// V4L VBI streaming input or output entity
@@ -85,6 +87,7 @@ impl TryFrom<u32> for MediaEntityFunctions {
         use MediaEntityFunctions::*;
         match v {
             media::MEDIA_ENT_F_UNKNOWN => Ok(Unknown),
+            media::MEDIA_ENT_F_V4L2_SUBDEV_UNKNOWN => Ok(V4L2SubdevUnknown),
             media::MEDIA_ENT_F_IO_V4L => Ok(IoV4L),
             media::MEDIA_ENT_F_IO_VBI => Ok(IoVBI),
             media::MEDIA_ENT_F_IO_SWRADIO => Ok(IoSWRadio),
