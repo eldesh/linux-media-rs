@@ -1,4 +1,5 @@
 use std::ffi::CStr;
+use std::ops::{BitAnd, BitOr};
 
 use bitflags;
 use derive_more::{From, Into};
@@ -147,6 +148,24 @@ impl TryFrom<u32> for MediaEntityFlags {
 
 #[derive(Debug, Copy, Clone, PartialEq, PartialOrd, Eq, Ord, From, Into)]
 pub struct EntityId(u32);
+
+/// for or'ing with linux_media_sys::MEDIA_ENT_ID_FLAG_NEXT.
+impl BitOr for EntityId {
+    type Output = Self;
+
+    fn bitor(self, rhs: Self) -> Self::Output {
+        EntityId(self.0 | rhs.0)
+    }
+}
+
+/// for clearing linux_media_sys::MEDIA_ENT_ID_FLAG_NEXT.
+impl BitAnd for EntityId {
+    type Output = Self;
+
+    fn bitand(self, rhs: Self) -> Self::Output {
+        EntityId(self.0 & rhs.0)
+    }
+}
 
 #[derive(Debug, Clone, PartialEq, PartialOrd, Eq, Ord)]
 pub struct MediaEntity {
