@@ -1,7 +1,7 @@
 [package]
 name = "linux-media"
 version = "0.1.0"
-edition = "2024"
+edition = "2021"
 authors = ["eldesh <nephits@gmail.com>"]
 description = "A Rust library providing access to the Linux Media Subsystem."
 license = "MIT"
