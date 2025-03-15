@@ -17,7 +17,7 @@ fn main() {
     }
     let (_fd, topology) = topology.unwrap();
 
-    let mut es = media::MediaEntityIter::new(
+    let es = media::MediaEntityIter::new(
         info_fd.as_fd(),
         info.media_version,
         topology.entities()[0].id(),

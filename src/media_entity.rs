@@ -6,6 +6,7 @@ use derive_more::{From, Into};
 use linux_media_sys as media;
 
 use crate::error;
+use crate::MediaEntityDesc;
 use crate::Version;
 
 #[derive(Debug, Clone, PartialEq, PartialOrd, Eq, Ord)]
@@ -224,23 +225,16 @@ impl MediaEntity {
         }
     }
 
-    pub fn from_raw_desc(version: Version, desc: media::media_entity_desc) -> Self {
-        let id = EntityId::from(desc.id);
-        let name = CStr::from_bytes_until_nul(&desc.name)
-            .unwrap()
-            .to_string_lossy()
-            .to_string();
-        let function: MediaEntityFunctions = desc.type_.try_into().unwrap();
-        let flags: Option<MediaEntityFlags> = if Self::has_flags(version) {
-            Some(desc.flags.try_into().unwrap())
-        } else {
-            None
-        };
+    pub fn from_desc(version: Version, desc: MediaEntityDesc) -> Self {
         Self {
-            id,
-            name,
-            function,
-            flags,
+            id: desc.id,
+            name: desc.name,
+            function: desc.r#type,
+            flags: if Self::has_flags(version) {
+                Some(desc.flags)
+            } else {
+                None
+            },
         }
     }
 }
