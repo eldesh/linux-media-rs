@@ -130,7 +130,7 @@ impl TryFrom<u32> for MediaEntityFunctions {
 
 bitflags::bitflags! {
     /// Media entity flags
-#[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Eq, Ord)]
+    #[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Eq, Ord)]
     pub struct MediaEntityFlags: u32 {
         /// Default entity for its type. Used to discover the default audio, VBI and video devices, the default camera sensor, etc.
         const Default = media::MEDIA_ENT_FL_DEFAULT;
