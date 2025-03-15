@@ -15,7 +15,7 @@ fn main() {
         Ok((fd, topology)) => println!("topology: ({:?},{:?})", fd, topology),
         Err(err) => println!("err: {}", err),
     }
-    let (_fd, topology) = topology.unwrap();
+    let (topo_fd, topology) = topology.unwrap();
 
     let es = media::MediaEntityIter::new(
         info_fd.as_fd(),
@@ -24,5 +24,14 @@ fn main() {
     );
     for e in es {
         println!("entity: {:?}", e);
+    }
+
+    match media::MediaLinksEnum::new(topo_fd, topology.entities()[0].id()) {
+        Ok(links) => {
+            println!("{:?}", links);
+        }
+        Err(err) => {
+            println!("err: {:?}", err);
+        }
     }
 }
