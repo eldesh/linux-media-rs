@@ -12,6 +12,20 @@ pub struct MediaLinkDesc {
     property: MediaLinkProperty,
 }
 
+impl MediaLinkDesc {
+    pub fn source(&self) -> &MediaPadDesc {
+        &self.source
+    }
+
+    pub fn sink(&self) -> &MediaPadDesc {
+        &self.sink
+    }
+
+    pub fn property(&self) -> MediaLinkProperty {
+        self.property
+    }
+}
+
 impl From<media::media_link_desc> for MediaLinkDesc {
     fn from(desc: media::media_link_desc) -> Self {
         assert_eq!(
