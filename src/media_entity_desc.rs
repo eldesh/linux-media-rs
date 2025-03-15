@@ -20,9 +20,10 @@ pub struct MediaEntityDesc {
     pads: usize,
     /// Total number of outbound links.
     /// Inbound links are not counted in this field.
-    links: u16,
+    links: usize,
 }
 
+/// Iterates over all MediaEntities with an ID greater than the stored ID.
 #[derive(Debug)]
 pub struct MediaEntityIter<'a> {
     fd: BorrowedFd<'a>,
@@ -40,7 +41,6 @@ impl<'a> MediaEntityIter<'a> {
     }
 }
 
-/// Iterates over all MediaEntities with an ID greater than the stored ID.
 impl<'a> Iterator for MediaEntityIter<'a> {
     type Item = MediaEntity;
     fn next(&mut self) -> Option<Self::Item> {
