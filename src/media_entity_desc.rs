@@ -73,7 +73,7 @@ impl From<media::media_entity_desc> for MediaEntityDesc {
             r#type: desc.type_.try_into().unwrap(),
             flags: desc.flags.try_into().unwrap(),
             pads: desc.pads.try_into().unwrap(),
-            links: desc.pads.try_into().unwrap(),
+            links: desc.links.try_into().unwrap(),
         }
     }
 }
