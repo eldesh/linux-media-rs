@@ -1,5 +1,5 @@
 use std::fs::OpenOptions;
-use std::os::fd::{AsRawFd, OwnedFd};
+use std::os::fd::{AsFd, AsRawFd, OwnedFd};
 use std::os::unix::fs::OpenOptionsExt;
 use std::path::{Path, PathBuf};
 
@@ -17,8 +17,8 @@ use crate::media_pad::MediaPad;
 /// Wrapper of media_v2_topology.
 #[derive(Debug, Clone, PartialEq, PartialOrd, Eq, Ord, Serialize, Deserialize)]
 pub struct MediaTopology {
-    /// Device file from which topology information is read
-    path: PathBuf,
+    /// If the instance was built with a file path given, the device file path from which topology information was read, otherwise None if it was built from a file descriptor.
+    path: Option<PathBuf>,
     version: u64,
     entities: Vec<MediaEntity>,
     interfaces: Vec<MediaInterface>,
@@ -36,14 +36,17 @@ where
 }
 
 impl MediaTopology {
-    /// Construct MediaTopology from the given device file such like: /dev/mediaX
+    /// Constructs a MediaTopology from the given device file such like: /dev/mediaX
     ///
     /// # Details
-    /// Construct MediaTopology from the media device file.
+    /// Constructs a MediaTopology from the media device file.
     ///
     /// * `info`: The device info including media_version.
     /// * `path`: The path to the device file from which topology information is read.
-    pub fn new<P>(info: &MediaDeviceInfo, path: P) -> Result<(OwnedFd, Self)>
+    ///
+    /// # Returns
+    /// A Result containing the constructed MediaTopology if successful, or an error otherwise.
+    pub fn from_path<P>(info: &MediaDeviceInfo, path: P) -> Result<(OwnedFd, Self)>
     where
         P: AsRef<Path>,
     {
@@ -55,9 +58,28 @@ impl MediaTopology {
             .open(&path)
             .map_err(|err| error::trap_io_error(err, path.clone()))?;
         let owned_fd = OwnedFd::from(file);
+        let mut topo = Self::from_fd(info, owned_fd.as_fd())?;
+        topo.path = Some(path);
+        Ok((owned_fd, topo))
+    }
+
+    /// Constructs a MediaTopology from a file descriptor.
+    ///
+    /// # Details
+    /// Constructs a MediaTopology from a file descriptor referencing a device file (e.g., /dev/mediaX).
+    ///
+    /// * `info`: A reference to a MediaDeviceInfo containing the media_version used to build the topology.
+    /// * `fd`: A file descriptor referring to the media device file.
+    ///
+    /// # Returns
+    /// A Result containing the constructed MediaTopology if successful, or an error otherwise.
+    pub fn from_fd<F>(info: &MediaDeviceInfo, fd: F) -> Result<Self>
+    where
+        F: AsFd,
+    {
         let mut topology: media::media_v2_topology = unsafe {
             let mut topology: media::media_v2_topology = std::mem::zeroed();
-            ioctl!(owned_fd, media::MEDIA_IOC_G_TOPOLOGY, &mut topology)?;
+            ioctl!(fd.as_fd(), media::MEDIA_IOC_G_TOPOLOGY, &mut topology)?;
             topology
         };
         let version = topology.topology_version;
@@ -77,27 +99,24 @@ impl MediaTopology {
         unsafe {
             // Second ioctl call with allocated space to
             // populate the entities/interface/links/pads array.
-            ioctl!(owned_fd, media::MEDIA_IOC_G_TOPOLOGY, &mut topology)?;
+            ioctl!(fd.as_fd(), media::MEDIA_IOC_G_TOPOLOGY, &mut topology)?;
         };
         assert_eq!(version, { topology.topology_version });
 
-        Ok((
-            owned_fd,
-            Self {
-                path,
-                version: topology.topology_version,
-                entities: entities
-                    .into_iter()
-                    .map(|ent| MediaEntity::from_raw_entity(info.media_version, ent))
-                    .collect(),
-                interfaces: interfaces.into_iter().map(Into::into).collect(),
-                pads: pads
-                    .into_iter()
-                    .map(|pad| MediaPad::from(info.media_version, pad))
-                    .collect(),
-                links: links.into_iter().map(Into::into).collect(),
-            },
-        ))
+        Ok(Self {
+            path: None,
+            version: topology.topology_version,
+            entities: entities
+                .into_iter()
+                .map(|ent| MediaEntity::from_raw_entity(info.media_version, ent))
+                .collect(),
+            interfaces: interfaces.into_iter().map(Into::into).collect(),
+            pads: pads
+                .into_iter()
+                .map(|pad| MediaPad::from(info.media_version, pad))
+                .collect(),
+            links: links.into_iter().map(Into::into).collect(),
+        })
     }
 
     pub fn entities(&self) -> &[MediaEntity] {

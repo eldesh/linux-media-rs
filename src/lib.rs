@@ -1,5 +1,6 @@
 pub mod error;
 mod ioctl;
+pub mod media;
 pub mod media_device_info;
 pub mod media_entity;
 pub mod media_entity_desc;
@@ -14,6 +15,7 @@ pub mod media_pad_desc;
 pub mod media_topology;
 pub mod version;
 
+pub use media::*;
 pub use media_device_info::*;
 pub use media_entity::*;
 pub use media_entity_desc::*;
