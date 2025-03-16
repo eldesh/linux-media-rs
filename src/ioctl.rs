@@ -4,7 +4,7 @@ macro_rules! ioctl {
         let ret = libc::ioctl($fd.as_raw_fd(), $kind, $arg);
         if ret != 0 {
             Err(error::Error::Ioctl {
-                code: ret,
+                code: std::io::Error::from_raw_os_error(ret),
                 api: $kind,
             })
         } else {

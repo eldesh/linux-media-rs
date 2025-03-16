@@ -9,10 +9,7 @@ pub enum Error {
     /// general io error
     Io { source: io::Error, path: PathBuf },
     /// ioctl error
-    Ioctl {
-        code: libc::c_int,
-        api: libc::c_ulong,
-    },
+    Ioctl { code: io::Error, api: libc::c_ulong },
     /// file not found
     FileNotFound { path: PathBuf, source: io::Error },
     /// parse error as [`crate::MediaInterfaceType`]
@@ -32,7 +29,7 @@ impl fmt::Display for Error {
         use Error::*;
         match self {
             Io { path, .. } => write!(f, "io error: {}", path.display()),
-            Ioctl { code, api } => write!(f, "ioctl failed with: {} for 0x{:02X}", code, api),
+            Ioctl { code, api } => write!(f, "ioctl failed 0x{:02X}: {}", api, code),
             FileNotFound { path, .. } => write!(f, "file not found: {}", path.display()),
             InterfaceTypeParseError { from, .. } => {
                 write!(f, "interface type parse error: {}", from)
