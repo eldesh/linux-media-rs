@@ -1,6 +1,7 @@
 use linux_media_sys as media;
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Eq, Ord)]
+#[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Eq, Ord, Serialize, Deserialize)]
 pub struct MediaIntfDevnode {
     pub major: u32,
     pub minor: u32,

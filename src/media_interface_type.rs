@@ -1,8 +1,9 @@
 use linux_media_sys as media;
+use serde::{Deserialize, Serialize};
 
 use crate::error;
 
-#[derive(Debug, Clone, PartialEq, PartialOrd, Eq, Ord)]
+#[derive(Debug, Clone, PartialEq, PartialOrd, Eq, Ord, Serialize, Deserialize)]
 pub enum MediaInterfaceType {
     /// Device node interface for the Digital TV frontend
     /// typically, /dev/dvb/adapter?/frontend?

@@ -2,17 +2,20 @@ use std::marker::PhantomData;
 
 use derive_more::{From, Into};
 use linux_media_sys as media;
+use serde::{Deserialize, Serialize};
 
 use crate::error;
 use crate::media_entity::EntityId;
 use crate::media_interface::InterfaceId;
 use crate::media_pad::PadId;
 
-#[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Eq, Ord, From, Into)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, PartialOrd, Eq, Ord, From, Into, Serialize, Deserialize,
+)]
 pub struct LinkId(u32);
 
 bitflags::bitflags! {
-    #[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Eq, Ord)]
+    #[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Eq, Ord, Serialize, Deserialize)]
     pub struct MediaLinkFlags: u32 {
         /// The link is enabled and can be used to transfer media data. When two or more links target a sink pad, only one of them can be enabled at a time.
         const Enabled = media::MEDIA_LNK_FL_ENABLED;
@@ -27,14 +30,14 @@ impl TryFrom<u32> for MediaLinkFlags {
     type Error = error::Error;
     fn try_from(v: u32) -> error::Result<Self> {
         MediaLinkFlags::from_bits(v & !media::MEDIA_LNK_FL_LINK_TYPE)
-            .ok_or_else(|| error::Error::LinkTypeParseError { from: v })
+            .ok_or_else(|| error::Error::LinkFlagsParseError { from: v })
     }
 }
 
-#[derive(Debug, Clone, PartialEq, PartialOrd, Eq, Ord)]
+#[derive(Debug, Clone, PartialEq, PartialOrd, Eq, Ord, Serialize, Deserialize)]
 pub struct PadIdOr<T>(u32, PhantomData<T>);
 
-#[derive(Debug, Clone, PartialEq, PartialOrd, Eq, Ord)]
+#[derive(Debug, Clone, PartialEq, PartialOrd, Eq, Ord, Serialize, Deserialize)]
 pub enum LinkType {
     /// MEDIA_LNK_FL_DATA_LINK
     /// On pad to pad links: unique IDs for the source/sink pad.
@@ -52,7 +55,7 @@ pub enum LinkType {
     },
 }
 
-#[derive(Debug, Clone, PartialEq, PartialOrd, Eq, Ord)]
+#[derive(Debug, Clone, PartialEq, PartialOrd, Eq, Ord, Serialize, Deserialize)]
 pub struct MediaLink {
     /// Unique ID for the link. Do not expect that the ID will always be the same for each instance of the device. In other words, do not hardcode link IDs in an application.
     pub id: LinkId,

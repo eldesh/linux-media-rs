@@ -4,6 +4,7 @@ use std::os::unix::fs::OpenOptionsExt;
 use std::path::{Path, PathBuf};
 
 use linux_media_sys as media;
+use serde::{Deserialize, Serialize};
 
 use crate::error::{self, Result};
 use crate::ioctl;
@@ -14,7 +15,7 @@ use crate::media_link::MediaLink;
 use crate::media_pad::MediaPad;
 
 /// Wrapper of media_v2_topology.
-#[derive(Debug, Clone, PartialEq, PartialOrd, Eq, Ord)]
+#[derive(Debug, Clone, PartialEq, PartialOrd, Eq, Ord, Serialize, Deserialize)]
 pub struct MediaTopology {
     /// Device file from which topology information is read
     path: PathBuf,
@@ -35,7 +36,13 @@ where
 }
 
 impl MediaTopology {
-    /// Construct topology from the given device file such like: /dev/mediaX
+    /// Construct MediaTopology from the given device file such like: /dev/mediaX
+    ///
+    /// # Details
+    /// Construct MediaTopology from the media device file.
+    ///
+    /// * `info`: The device info including media_version.
+    /// * `path`: The path to the device file from which topology information is read.
     pub fn new<P>(info: &MediaDeviceInfo, path: P) -> Result<(OwnedFd, Self)>
     where
         P: AsRef<Path>,

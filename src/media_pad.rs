@@ -1,14 +1,17 @@
 use derive_more::{Display, From, Into};
 use linux_media_sys as media;
+use serde::{Deserialize, Serialize};
 
 use crate::error;
 use crate::media_entity::EntityId;
 use crate::version::Version;
 
-#[derive(Debug, Copy, Clone, PartialEq, PartialOrd, Eq, Ord, From, Into, Display)]
+#[derive(
+    Debug, Copy, Clone, PartialEq, PartialOrd, Eq, Ord, From, Into, Display, Serialize, Deserialize,
+)]
 pub struct PadId(u32);
 
-#[derive(Debug, Copy, Clone, PartialEq, PartialOrd, Eq, Ord)]
+#[derive(Debug, Copy, Clone, PartialEq, PartialOrd, Eq, Ord, Serialize, Deserialize)]
 pub enum MediaPadFlags {
     /// Input pad, relative to the entity. Input pads sink data and are targets of links.
     Sink,
@@ -54,7 +57,7 @@ impl Into<u32> for MediaPadFlags {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, PartialOrd, Eq, Ord)]
+#[derive(Debug, Clone, PartialEq, PartialOrd, Eq, Ord, Serialize, Deserialize)]
 pub struct MediaPad {
     /// Unique ID for the pad. Do not expect that the ID will always be the same for each instance of the device. In other words, do not hardcode pad IDs in an application.
     pub id: PadId,

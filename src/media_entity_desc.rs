@@ -2,12 +2,13 @@ use std::ffi::CStr;
 use std::os::fd::{AsRawFd, BorrowedFd};
 
 use linux_media_sys as media;
+use serde::{Deserialize, Serialize};
 
 use crate::error;
 use crate::ioctl;
 use crate::{EntityId, MediaEntity, MediaEntityFlags, MediaEntityFunctions, Version};
 
-#[derive(Debug, Clone, PartialEq, PartialOrd, Eq, Ord)]
+#[derive(Debug, Clone, PartialEq, PartialOrd, Eq, Ord, Serialize, Deserialize)]
 pub struct MediaEntityDesc {
     /// Entity ID, set by the application. When the ID is or’ed with MEDIA_ENT_ID_FLAG_NEXT, the driver clears the flag and returns the first entity with a larger ID. Do not expect that the ID will always be the same for each instance of the device. In other words, do not hardcode entity IDs in an application.
     pub id: EntityId,

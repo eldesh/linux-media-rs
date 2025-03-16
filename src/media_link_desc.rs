@@ -1,9 +1,10 @@
 use linux_media_sys as media;
+use serde::{Deserialize, Serialize};
 
 use crate::MediaLinkFlags;
 use crate::MediaPadDesc;
 
-#[derive(Debug, Clone, PartialEq, PartialOrd, Eq, Ord)]
+#[derive(Debug, Clone, PartialEq, PartialOrd, Eq, Ord, Serialize, Deserialize)]
 pub struct MediaLinkDesc {
     /// Pad at the origin of this link.
     source: MediaPadDesc,

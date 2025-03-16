@@ -6,12 +6,13 @@ use std::os::unix::fs::OpenOptionsExt;
 use std::path::Path;
 
 use linux_media_sys as media;
+use serde::{Deserialize, Serialize};
 
 use crate::error;
 use crate::ioctl;
 use crate::version::*;
 
-#[derive(Clone, PartialEq, PartialOrd, Eq, Ord)]
+#[derive(Clone, PartialEq, PartialOrd, Eq, Ord, Serialize, Deserialize)]
 pub struct MediaDeviceInfo {
     pub driver: String,
     pub model: String,
@@ -52,13 +53,20 @@ impl MediaDeviceInfo {
             .map_err(|err| error::trap_io_error(err, path.to_path_buf()))?
             .into();
 
+        let info = Self::from_fd(fd.as_raw_fd())?;
+        Ok((fd, info))
+    }
+
+    pub fn from_fd<F>(fd: F) -> error::Result<Self>
+    where
+        F: AsRawFd,
+    {
         let info = unsafe {
             let mut info: media::media_device_info = std::mem::zeroed();
             ioctl!(fd, media::MEDIA_IOC_DEVICE_INFO, &mut info)?;
             info
         };
-
-        Ok((fd, info.into()))
+        Ok(info.into())
     }
 
     pub fn driver(&self) -> &str {

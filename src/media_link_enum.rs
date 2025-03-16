@@ -1,5 +1,7 @@
 use std::os::fd::AsRawFd;
 
+use serde::{Deserialize, Serialize};
+
 use crate::error;
 use crate::ioctl;
 use crate::{EntityId, MediaEntityDesc, MediaLinkDesc, MediaPadDesc};
@@ -7,7 +9,7 @@ use crate::{EntityId, MediaEntityDesc, MediaLinkDesc, MediaPadDesc};
 use linux_media_sys as media;
 
 /// Enumerates MediaPads and/or MediaLinks associated to an Entity specified with id.
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, PartialOrd, Eq, Ord, Serialize, Deserialize)]
 pub struct MediaLinksEnum {
     entity: EntityId,
     pads: Vec<MediaPadDesc>,

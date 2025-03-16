@@ -4,12 +4,13 @@ use std::ops::{BitAnd, BitOr};
 use bitflags;
 use derive_more::{From, Into};
 use linux_media_sys as media;
+use serde::{Deserialize, Serialize};
 
 use crate::error;
 use crate::MediaEntityDesc;
 use crate::Version;
 
-#[derive(Debug, Clone, PartialEq, PartialOrd, Eq, Ord)]
+#[derive(Debug, Clone, PartialEq, PartialOrd, Eq, Ord, Serialize, Deserialize)]
 pub enum MediaEntityFunctions {
     /// Unknown entity. That generally indicates that a driver didn’t initialize properly the entity, which is a Kernel bug
     Unknown,
@@ -130,7 +131,7 @@ impl TryFrom<u32> for MediaEntityFunctions {
 
 bitflags::bitflags! {
     /// Media entity flags
-    #[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Eq, Ord)]
+    #[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Eq, Ord, Serialize, Deserialize)]
     pub struct MediaEntityFlags: u32 {
         /// Default entity for its type. Used to discover the default audio, VBI and video devices, the default camera sensor, etc.
         const Default = media::MEDIA_ENT_FL_DEFAULT;
@@ -147,7 +148,9 @@ impl TryFrom<u32> for MediaEntityFlags {
     }
 }
 
-#[derive(Debug, Copy, Clone, PartialEq, PartialOrd, Eq, Ord, From, Into)]
+#[derive(
+    Debug, Copy, Clone, PartialEq, PartialOrd, Eq, Ord, From, Into, Serialize, Deserialize,
+)]
 pub struct EntityId(u32);
 
 /// for or'ing with linux_media_sys::MEDIA_ENT_ID_FLAG_NEXT.
@@ -168,7 +171,7 @@ impl BitAnd for EntityId {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, PartialOrd, Eq, Ord)]
+#[derive(Debug, Clone, PartialEq, PartialOrd, Eq, Ord, Serialize, Deserialize)]
 pub struct MediaEntity {
     id: EntityId,
     name: String,
