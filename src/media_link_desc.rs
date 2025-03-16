@@ -1,6 +1,6 @@
 use linux_media_sys as media;
 
-use crate::MediaLinkProperty;
+use crate::MediaLinkFlags;
 use crate::MediaPadDesc;
 
 #[derive(Debug, Clone, PartialEq, PartialOrd, Eq, Ord)]
@@ -9,7 +9,7 @@ pub struct MediaLinkDesc {
     source: MediaPadDesc,
     /// Pad at the target of this link.
     sink: MediaPadDesc,
-    property: MediaLinkProperty,
+    flags: MediaLinkFlags,
 }
 
 impl MediaLinkDesc {
@@ -21,8 +21,8 @@ impl MediaLinkDesc {
         &self.sink
     }
 
-    pub fn property(&self) -> MediaLinkProperty {
-        self.property
+    pub fn flags(&self) -> MediaLinkFlags {
+        self.flags
     }
 }
 
@@ -35,7 +35,7 @@ impl From<media::media_link_desc> for MediaLinkDesc {
         Self {
             source: desc.source.into(),
             sink: desc.sink.into(),
-            property: desc.flags.try_into().unwrap(),
+            flags: desc.flags.try_into().unwrap(),
         }
     }
 }

@@ -11,40 +11,23 @@ use crate::media_pad::PadId;
 #[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Eq, Ord, From, Into)]
 pub struct LinkId(u32);
 
-#[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Eq, Ord)]
-pub enum MediaLinkProperty {
-    /// The link is enabled and can be used to transfer media data. When two or more links target a sink pad, only one of them can be enabled at a time.
-    Enabled,
-    /// The link enabled state can’t be modified at runtime. An immutable link is always enabled.
-    Immutable,
-    /// The link enabled state can be modified during streaming. This flag is set by drivers and is read-only for applications.
-    Dynamic,
-}
-
-impl TryFrom<u32> for MediaLinkProperty {
-    type Error = error::Error;
-    fn try_from(v: u32) -> error::Result<Self> {
-        use MediaLinkProperty::*;
-        if v & media::MEDIA_LNK_FL_ENABLED != 0 {
-            Ok(Enabled)
-        } else if v & media::MEDIA_LNK_FL_IMMUTABLE != 0 {
-            Ok(Immutable)
-        } else if v & media::MEDIA_LNK_FL_DYNAMIC != 0 {
-            Ok(Dynamic)
-        } else {
-            Err(error::Error::LinkTypeParseError { from: v })
-        }
+bitflags::bitflags! {
+    #[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Eq, Ord)]
+    pub struct MediaLinkFlags: u32 {
+        /// The link is enabled and can be used to transfer media data. When two or more links target a sink pad, only one of them can be enabled at a time.
+        const Enabled = media::MEDIA_LNK_FL_ENABLED;
+        /// The link enabled state can’t be modified at runtime. An immutable link is always enabled.
+        const Immutable = media::MEDIA_LNK_FL_IMMUTABLE;
+        /// The link enabled state can be modified during streaming. This flag is set by drivers and is read-only for applications.
+        const Dynamic = media::MEDIA_LNK_FL_DYNAMIC;
     }
 }
 
-impl Into<u32> for MediaLinkProperty {
-    fn into(self) -> u32 {
-        use MediaLinkProperty::*;
-        match self {
-            Enabled => media::MEDIA_LNK_FL_ENABLED,
-            Immutable => media::MEDIA_LNK_FL_IMMUTABLE,
-            Dynamic => media::MEDIA_LNK_FL_DYNAMIC,
-        }
+impl TryFrom<u32> for MediaLinkFlags {
+    type Error = error::Error;
+    fn try_from(v: u32) -> error::Result<Self> {
+        MediaLinkFlags::from_bits(v & !media::MEDIA_LNK_FL_LINK_TYPE)
+            .ok_or_else(|| error::Error::LinkTypeParseError { from: v })
     }
 }
 
@@ -74,16 +57,12 @@ pub struct MediaLink {
     /// Unique ID for the link. Do not expect that the ID will always be the same for each instance of the device. In other words, do not hardcode link IDs in an application.
     pub id: LinkId,
     pub r#type: LinkType,
-    pub property: MediaLinkProperty,
+    pub flags: MediaLinkFlags,
 }
 
 impl MediaLink {
-    pub fn new(id: LinkId, r#type: LinkType, property: MediaLinkProperty) -> Self {
-        Self {
-            id,
-            r#type,
-            property,
-        }
+    pub fn new(id: LinkId, r#type: LinkType, flags: MediaLinkFlags) -> Self {
+        Self { id, r#type, flags }
     }
 
     pub fn id(&self) -> LinkId {
@@ -111,7 +90,7 @@ impl From<media::media_v2_link> for MediaLink {
         Self {
             id: link.id.into(),
             r#type,
-            property: link.flags.try_into().unwrap(),
+            flags: link.flags.try_into().unwrap(),
         }
     }
 }
