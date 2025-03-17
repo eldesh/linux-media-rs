@@ -14,7 +14,7 @@ fn main() -> media::error::Result<()> {
     };
     println!("path: {}", path.display());
 
-    let media = media::Media::from_path(&path.as_ref())?;
+    let media = media::Media::from_path(&path)?;
     let info = media.info();
 
     println!("info: {}", json::to_string_pretty(&info).unwrap());
