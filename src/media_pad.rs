@@ -45,10 +45,10 @@ impl TryFrom<u32> for MediaPadFlags {
     }
 }
 
-impl Into<u32> for MediaPadFlags {
-    fn into(self) -> u32 {
+impl From<MediaPadFlags> for u32 {
+    fn from(flags: MediaPadFlags) -> u32 {
         use MediaPadFlags::*;
-        match self {
+        match flags {
             Sink => media::MEDIA_PAD_FL_SINK,
             Source => media::MEDIA_PAD_FL_SOURCE,
             SinkMustConnect => media::MEDIA_PAD_FL_SINK | media::MEDIA_PAD_FL_MUST_CONNECT,
