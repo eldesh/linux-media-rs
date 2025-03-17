@@ -57,10 +57,9 @@ pub enum LinkType {
 
 #[derive(Debug, Clone, PartialEq, PartialOrd, Eq, Ord, Serialize, Deserialize)]
 pub struct MediaLink {
-    /// Unique ID for the link. Do not expect that the ID will always be the same for each instance of the device. In other words, do not hardcode link IDs in an application.
-    pub id: LinkId,
-    pub r#type: LinkType,
-    pub flags: MediaLinkFlags,
+    id: LinkId,
+    r#type: LinkType,
+    flags: MediaLinkFlags,
 }
 
 impl MediaLink {
@@ -68,8 +67,17 @@ impl MediaLink {
         Self { id, r#type, flags }
     }
 
+    /// Unique ID for the link. Do not expect that the ID will always be the same for each instance of the device. In other words, do not hardcode link IDs in an application.
     pub fn id(&self) -> LinkId {
         self.id
+    }
+
+    pub fn r#type(&self) -> &LinkType {
+        &self.r#type
+    }
+
+    pub fn flags(&self) -> MediaLinkFlags {
+        self.flags
     }
 }
 
