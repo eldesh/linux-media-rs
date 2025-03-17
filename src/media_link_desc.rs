@@ -1,6 +1,10 @@
+use std::os::fd::{AsFd, AsRawFd};
+
 use linux_media_sys as media;
 use serde::{Deserialize, Serialize};
 
+use crate::error;
+use crate::ioctl;
 use crate::MediaLinkFlags;
 use crate::MediaPadDesc;
 
@@ -12,6 +16,14 @@ pub struct MediaLinkDesc {
 }
 
 impl MediaLinkDesc {
+    pub fn new(source: MediaPadDesc, sink: MediaPadDesc, flags: MediaLinkFlags) -> Self {
+        Self {
+            source,
+            sink,
+            flags,
+        }
+    }
+
     /// Pad at the origin of this link.
     pub fn source(&self) -> &MediaPadDesc {
         &self.source
@@ -25,6 +37,19 @@ impl MediaLinkDesc {
     /// Link flags
     pub fn flags(&self) -> MediaLinkFlags {
         self.flags
+    }
+
+    pub fn setup<F>(&mut self, fd: F, flags: MediaLinkFlags) -> error::Result<()>
+    where
+        F: AsFd,
+    {
+        unsafe {
+            let mut desc: linux_media_sys::media_link_desc = self.clone().into();
+            desc.flags = flags.bits();
+            ioctl!(fd.as_fd(), media::MEDIA_IOC_SETUP_LINK, &mut desc)?;
+            *self = desc.into();
+            Ok(())
+        }
     }
 }
 
@@ -43,5 +68,15 @@ impl From<media::media_link_desc> for MediaLinkDesc {
             sink: desc.sink.into(),
             flags: desc.flags.try_into().unwrap(),
         }
+    }
+}
+
+impl From<MediaLinkDesc> for media::media_link_desc {
+    fn from(desc: MediaLinkDesc) -> media::media_link_desc {
+        let mut raw: linux_media_sys::media_link_desc = unsafe { std::mem::zeroed() };
+        raw.source = desc.source.into();
+        raw.sink = desc.sink.into();
+        raw.flags = desc.flags.bits();
+        raw
     }
 }
