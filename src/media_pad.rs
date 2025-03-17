@@ -64,7 +64,7 @@ pub struct MediaPad {
     /// Unique ID for the entity where this pad belongs.
     pub entity_id: EntityId,
     pub flags: MediaPadFlags,
-    /// Pad index, starts at 0. Only valid if hash_index(media_version) returns true.
+    /// Pad index, starts at 0. Only valid if [has_index(media_version)][MediaPad::has_index] returns true.
     pub index: Option<usize>,
 }
 
