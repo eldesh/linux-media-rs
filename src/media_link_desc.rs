@@ -30,9 +30,13 @@ impl MediaLinkDesc {
 
 impl From<media::media_link_desc> for MediaLinkDesc {
     fn from(desc: media::media_link_desc) -> Self {
-        assert_eq!(
-            desc.flags & media::MEDIA_LNK_FL_LINK_TYPE,
-            media::MEDIA_LNK_FL_DATA_LINK
+        assert!({
+            let link_type = desc.flags & media::MEDIA_LNK_FL_LINK_TYPE;
+            (link_type == media::MEDIA_LNK_FL_DATA_LINK) ||
+            (link_type == media::MEDIA_LNK_FL_ANCILLARY_LINK)
+          },
+          "The link type of MediaLinkDesc must be either DATA_LINK or ANCILLARY_LINK, but got flags: {:#x}",
+          desc.flags
         );
         Self {
             source: desc.source.into(),
