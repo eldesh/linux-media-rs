@@ -6,22 +6,23 @@ use crate::MediaPadDesc;
 
 #[derive(Debug, Clone, PartialEq, PartialOrd, Eq, Ord, Serialize, Deserialize)]
 pub struct MediaLinkDesc {
-    /// Pad at the origin of this link.
     source: MediaPadDesc,
-    /// Pad at the target of this link.
     sink: MediaPadDesc,
     flags: MediaLinkFlags,
 }
 
 impl MediaLinkDesc {
+    /// Pad at the origin of this link.
     pub fn source(&self) -> &MediaPadDesc {
         &self.source
     }
 
+    /// Pad at the target of this link.
     pub fn sink(&self) -> &MediaPadDesc {
         &self.sink
     }
 
+    /// Link flags
     pub fn flags(&self) -> MediaLinkFlags {
         self.flags
     }
