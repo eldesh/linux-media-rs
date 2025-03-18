@@ -46,7 +46,33 @@ impl<'a> Request<'a> {
         unsafe { ioctl!(self.request_fd, media::MEDIA_REQUEST_IOC_REINIT) }
     }
 
+    /// Enqueue the request
+    ///
+    /// # Errors
+    /// - `RequestIsAlreadyQueued`   : The request was already queued or the application queued the first buffer directly, but later attempted to use a request. It is not permitted to mix the two APIs.
+    /// - `RequestNotContainBuffers` : The request did not contain any buffers. All requests are required to have at least one buffer. This can also be returned if some required configuration is missing in the request.
+    /// - `OutOfMemory`              : Out of memory when allocating internal data structures for this request.
+    /// - `RequestHasInvalidData`    : The request has invalid data.
+    /// - `HardwareBadState`         : The hardware is in a bad state. To recover, the application needs to stop streaming to reset the hardware state and then try to restart streaming.
     pub fn queue(&self) -> error::Result<()> {
-        unsafe { ioctl!(self.request_fd, media::MEDIA_REQUEST_IOC_QUEUE) }
+        use error::Error::*;
+        let api = media::MEDIA_REQUEST_IOC_QUEUE;
+        unsafe {
+            ioctl!(self.request_fd, api).map_err(|err| {
+                let fd = self.request_fd.as_raw_fd();
+                if let Ioctl { ref code, .. } = err {
+                    match code.raw_os_error() {
+                        Some(code @ libc::EBUSY) => RequestIsAlreadyQueued { fd, code, api },
+                        Some(code @ libc::ENOENT) => RequestNotContainBuffers { fd, code, api },
+                        Some(code @ libc::ENOMEM) => OutOfMemory { fd, code, api },
+                        Some(code @ libc::EINVAL) => RequestHasInvalidData { fd, code, api },
+                        Some(code @ libc::EIO) => HardwareBadState { fd, code, api },
+                        _ => err,
+                    }
+                } else {
+                    err
+                }
+            })
+        }
     }
 }

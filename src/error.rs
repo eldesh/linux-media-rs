@@ -9,8 +9,10 @@ pub type Result<T> = std::result::Result<T, Error>;
 pub enum Error {
     /// generic io error
     Io { source: io::Error, path: PathBuf },
+    /// file not found
+    FileNotFound { path: PathBuf, source: io::Error },
     /// generic ioctl error
-    /// [`code`] is constructed from [`std::io::Error::from_raw_os_error`].
+    /// `code` is constructed from [`std::io::Error::from_raw_os_error`].
     Ioctl {
         fd: RawFd,
         code: io::Error,
@@ -28,8 +30,36 @@ pub enum Error {
         code: libc::c_int,
         api: libc::c_ulong,
     },
-    /// file not found
-    FileNotFound { path: PathBuf, source: io::Error },
+    /// The request was already queued or the application queued the first buffer directly, but later attempted to use a request.
+    RequestIsAlreadyQueued {
+        fd: RawFd,
+        code: libc::c_int,
+        api: libc::c_ulong,
+    },
+    /// The request did not contain any buffers. All requests are required to have at least one buffer. This can also be returned if some required configuration is missing in the request.
+    RequestNotContainBuffers {
+        fd: RawFd,
+        code: libc::c_int,
+        api: libc::c_ulong,
+    },
+    /// Out of memory when allocating internal data structures for a request.
+    OutOfMemory {
+        fd: RawFd,
+        code: libc::c_int,
+        api: libc::c_ulong,
+    },
+    /// Request has invalid data
+    RequestHasInvalidData {
+        fd: RawFd,
+        code: libc::c_int,
+        api: libc::c_ulong,
+    },
+    /// The hardware is in a bad state. To recover, the application needs to stop streaming to reset the hardware state and then try to restart streaming.
+    HardwareBadState {
+        fd: RawFd,
+        code: libc::c_int,
+        api: libc::c_ulong,
+    },
     /// parse error as [`crate::MediaInterfaceType`]
     InterfaceTypeParseError { from: u32 },
     /// parse error as [`crate::MediaEntityFunctions`]
@@ -51,7 +81,7 @@ impl Error {
     /// - `api` : The kind of operation that resulted in the error.
     ///
     /// # References
-    /// https://www.kernel.org/doc/html/v6.9/userspace-api/media/gen-errors.html
+    /// <https://www.kernel.org/doc/html/v6.9/userspace-api/media/gen-errors.html>
     pub fn ioctl_error<F>(fd: F, code: libc::c_int, api: libc::c_ulong) -> Error
     where
         F: AsRawFd,
@@ -75,6 +105,7 @@ impl fmt::Display for Error {
         use Error::*;
         match self {
             Io { path, .. } => write!(f, "io error: {}", path.display()),
+            FileNotFound { path, .. } => write!(f, "file not found: {}", path.display()),
             Ioctl { fd, code, api } => {
                 write!(f, "generic ioctl error {}: 0x{:02X}: {}", fd, api, code)
             }
@@ -86,7 +117,33 @@ impl fmt::Display for Error {
             DeviceIsBusy { fd, code, api } => {
                 write!(f, "the device is busy {}: 0x{:02X}: {}", fd, api, code)
             }
-            FileNotFound { path, .. } => write!(f, "file not found: {}", path.display()),
+            RequestIsAlreadyQueued { fd, code, api } => {
+                write!(
+                    f,
+                    "the request is already queued {}: 0x{:02X}: {}",
+                    fd, api, code
+                )
+            }
+            RequestNotContainBuffers { fd, code, api } => {
+                write!(
+                    f,
+                    "the request did not contain any buffers {}: 0x{:02X}: {}",
+                    fd, api, code
+                )
+            }
+            OutOfMemory { fd, code, api } => {
+                write!(f, "Out of memory when allocating internal data structures for this request. {}: 0x{:02X}: {}", fd, api, code)
+            }
+            RequestHasInvalidData { fd, code, api } => {
+                write!(
+                    f,
+                    "The request has invalid data. {}: 0x{:02X}: {}",
+                    fd, api, code
+                )
+            }
+            HardwareBadState { fd, code, api } => {
+                write!(f, "The hardware is in a bad state. To recover, the application needs to stop streaming to reset the hardware state and then try to restart streaming. {}: 0x{:02X}: {}", fd, api, code)
+            }
             InterfaceTypeParseError { from, .. } => {
                 write!(f, "interface type parse error: {}", from)
             }
