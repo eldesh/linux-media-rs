@@ -1,3 +1,5 @@
+/// A wrapper macro of ioctl.
+/// If the calling ioctl returned -1, it returns [`crate::error::Error`] corresponding to the errno.
 #[macro_export]
 macro_rules! ioctl {
     ($fd:expr, $kind:expr) => {{
@@ -5,7 +7,7 @@ macro_rules! ioctl {
         if ret != 0 {
             Err(crate::error::Error::ioctl_error(
                 $fd.as_raw_fd(),
-                ret,
+                std::io::Error::last_os_error().raw_os_error().unwrap(),
                 $kind,
             ))
         } else {
@@ -17,7 +19,7 @@ macro_rules! ioctl {
         if ret != 0 {
             Err(crate::error::Error::ioctl_error(
                 $fd.as_raw_fd(),
-                ret,
+                std::io::Error::last_os_error().raw_os_error().unwrap(),
                 $kind,
             ))
         } else {
