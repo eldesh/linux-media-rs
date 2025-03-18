@@ -45,4 +45,8 @@ impl<'a> Request<'a> {
     pub fn init(&mut self) -> error::Result<()> {
         unsafe { ioctl!(self.request_fd, media::MEDIA_REQUEST_IOC_REINIT) }
     }
+
+    pub fn queue(&self) -> error::Result<()> {
+        unsafe { ioctl!(self.request_fd, media::MEDIA_REQUEST_IOC_QUEUE) }
+    }
 }
