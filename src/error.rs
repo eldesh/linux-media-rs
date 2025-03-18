@@ -113,3 +113,26 @@ pub fn trap_io_error(err: io::Error, path: PathBuf) -> Error {
         _ => Error::Io { source: err, path },
     }
 }
+
+#[cfg(test)]
+pub mod test {
+    use super::*;
+
+    // https://www.kernel.org/doc/html/v6.9/userspace-api/media/gen-errors.html
+    #[test]
+    fn enotty_is_not_supported() {
+        use Error::*;
+        let err = NotSupportedIoctl {
+            fd: 0,
+            code: libc::ENOTTY,
+            api: 0,
+        };
+        assert!(matches!(
+            err,
+            NotSupportedIoctl {
+                code: libc::ENOTTY,
+                ..
+            }
+        ));
+    }
+}
