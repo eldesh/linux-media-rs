@@ -34,12 +34,15 @@ impl<'a> Request<'a> {
         Self::new(self.media_fd)
     }
 
-    /// Initialize the request
+    /// Initializes the request for recycling without re-allocating it.
     ///
     /// # Details
-    /// Initialize the request if it either has not been queued yet, or if it was queued and completed. Otherwise it will set errno to EBUSY. No other error codes can be returned.
+    /// Reinitializes the request, provided that it has not been queued yet or that it has already been queued and completed.
+    /// After reinitialization, the request is ready to be queued again for subsequent operations.
+    ///
+    /// # Errors
+    /// If the request is still queued and has not yet completed, this function returns [`error::Error::DeviceIsBusy`]. No other errors are possible.
     pub fn init(&mut self) -> error::Result<()> {
         unsafe { ioctl!(self.request_fd, media::MEDIA_REQUEST_IOC_REINIT) }
     }
 }
-
