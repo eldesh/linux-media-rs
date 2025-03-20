@@ -99,20 +99,16 @@ impl MediaDeviceInfo {
 
 impl From<media::media_device_info> for MediaDeviceInfo {
     fn from(info: media::media_device_info) -> Self {
-        let driver = CStr::from_bytes_until_nul(&info.driver)
-            .unwrap()
+        let driver = unsafe { CStr::from_ptr(info.driver.as_ptr()) }
             .to_string_lossy()
             .to_string();
-        let model = CStr::from_bytes_until_nul(&info.model)
-            .unwrap()
+        let model = unsafe { CStr::from_ptr(info.model.as_ptr()) }
             .to_string_lossy()
             .to_string();
-        let serial = CStr::from_bytes_until_nul(&info.serial)
-            .unwrap()
+        let serial = unsafe { CStr::from_ptr(info.serial.as_ptr()) }
             .to_string_lossy()
             .to_string();
-        let bus_info = CStr::from_bytes_until_nul(&info.bus_info)
-            .unwrap()
+        let bus_info = unsafe { CStr::from_ptr(info.bus_info.as_ptr()) }
             .to_string_lossy()
             .to_string();
         let media_version = info.media_version.into();

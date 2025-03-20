@@ -67,10 +67,11 @@ impl From<media::media_entity_desc> for MediaEntityDesc {
     fn from(desc: media::media_entity_desc) -> Self {
         Self {
             id: desc.id.into(),
-            name: CStr::from_bytes_until_nul(&desc.name)
-                .unwrap()
-                .to_string_lossy()
-                .to_string(),
+            name: unsafe {
+                CStr::from_ptr(desc.name.as_ptr())
+                    .to_string_lossy()
+                    .to_string()
+            },
             r#type: desc.type_.try_into().unwrap(),
             flags: desc.flags.try_into().unwrap(),
             pads: desc.pads.try_into().unwrap(),

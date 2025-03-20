@@ -210,8 +210,7 @@ impl MediaEntity {
 
     pub fn from_raw_entity(version: Version, entity: media::media_v2_entity) -> Self {
         let id = EntityId::from(entity.id);
-        let name = CStr::from_bytes_until_nul(&entity.name)
-            .unwrap()
+        let name = unsafe { CStr::from_ptr(entity.name.as_ptr()) }
             .to_string_lossy()
             .to_string();
         let function: MediaEntityFunctions = entity.function.try_into().unwrap();
