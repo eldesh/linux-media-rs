@@ -92,6 +92,7 @@ impl From<media::media_v2_link> for MediaLink {
                 source_id: link.source_id.into(),
                 sink_id: link.sink_id.into(),
             },
+            #[cfg(has_linux_media_sys__MEDIA_LNK_FL_ANCILLARY_LINK)]
             media::MEDIA_LNK_FL_ANCILLARY_LINK => LinkType::AncillaryLink {
                 source_id: PadIdOr(link.source_id, PhantomData),
                 sink_id: PadIdOr(link.sink_id, PhantomData),
