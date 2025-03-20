@@ -2,6 +2,7 @@
 name = "linux-media"
 version = "0.1.0"
 edition = "2021"
+rust_version = "1.75.0"
 authors = ["eldesh <nephits@gmail.com>"]
 description = "A Rust library providing access to the Linux Media Subsystem."
 license = "MIT"
@@ -13,7 +14,6 @@ repository = "https://github.com/eldesh/linux-media"
 name = "main"
 path = "src/main.rs"
 
-
 [dependencies]
 linux-media-sys = "=0.3.0"
 bitflags = { version = "=2.9.0", features = ["serde"] }
@@ -24,5 +24,4 @@ serde_json = "1.0.140"
 
 [build-dependencies]
 autocfg = "0.1"
-
 
