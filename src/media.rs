@@ -6,6 +6,7 @@ use std::path::{Path, PathBuf};
 use crate::error;
 use crate::MediaDeviceInfo;
 use crate::Version;
+use crate::Request;
 
 #[derive(Debug)]
 pub struct Media {
@@ -45,5 +46,9 @@ impl Media {
 
     pub fn device_fd(&self) -> BorrowedFd<'_> {
         self.fd.as_fd()
+    }
+
+    pub fn new_request(&self) -> error::Result<Request<'_>> {
+        Request::new(self.fd.as_fd())
     }
 }
