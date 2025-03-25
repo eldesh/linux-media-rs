@@ -32,12 +32,15 @@ pub enum MediaEntityFunctions {
     DTVCondAccess,
     /// Digital TV network ULE/MLE desencapsulation entity. Could be implemented on hardware or in Kernelspace
     DTVNetDecap,
-    //// Connector for a Radio Frequency (RF) signal.
-    // CONN_RF,
-    //// Connector for a S-Video signal.
-    // CONN_SVIDEO,
-    //// Connector for a RGB composite signal.
-    // CONN_COMPOSITE,
+    /// Connector for a Radio Frequency (RF) signal.
+    #[cfg(has_linux_media_sys__MEDIA_ENT_F_CONN_RF)]
+    ConnRF,
+    /// Connector for a S-Video signal.
+    #[cfg(has_linux_media_sys__MEDIA_ENT_F_CONN_SVIDEO)]
+    ConnSVideo,
+    /// Connector for a RGB composite signal.
+    #[cfg(has_linux_media_sys__MEDIA_ENT_F_CONN_COMPOSITE)]
+    ConnComposite,
     /// Camera video sensor entity.
     CAMSensor,
     /// Flash controller entity.
@@ -99,9 +102,12 @@ impl TryFrom<u32> for MediaEntityFunctions {
             media::MEDIA_ENT_F_TS_DEMUX => Ok(TSDemux),
             media::MEDIA_ENT_F_DTV_CA => Ok(DTVCondAccess),
             media::MEDIA_ENT_F_DTV_NET_DECAP => Ok(DTVNetDecap),
-            // media::MEDIA_ENT_F_CONN_RF => Ok(ConnRF),
-            // media::MEDIA_ENT_F_CONN_SVIDEO => Ok(ConnSvideo),
-            // media::MEDIA_ENT_F_CONN_COMPOSITE => Ok(ConnComposite),
+            #[cfg(has_linux_media_sys__MEDIA_ENT_F_CONN_RF)]
+            media::MEDIA_ENT_F_CONN_RF => Ok(ConnRF),
+            #[cfg(has_linux_media_sys__MEDIA_ENT_F_CONN_SVIDEO)]
+            media::MEDIA_ENT_F_CONN_SVIDEO => Ok(ConnSvideo),
+            #[cfg(has_linux_media_sys__MEDIA_ENT_F_CONN_COMPOSITE)]
+            media::MEDIA_ENT_F_CONN_COMPOSITE => Ok(ConnComposite),
             media::MEDIA_ENT_F_CAM_SENSOR => Ok(CAMSensor),
             media::MEDIA_ENT_F_FLASH => Ok(Flash),
             media::MEDIA_ENT_F_LENS => Ok(Lens),
