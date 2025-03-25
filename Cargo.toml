@@ -10,10 +10,6 @@ readme = "README.md"
 repository = "https://github.com/eldesh/linux-media"
 
 
-[[bin]]
-name = "main"
-path = "src/main.rs"
-
 [dependencies]
 linux-media-sys = "=0.3.0"
 bitflags = { version = "=2.9.0", features = ["serde"] }
