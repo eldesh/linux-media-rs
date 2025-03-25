@@ -10,7 +10,7 @@ use crate::error;
 use crate::MediaEntityDesc;
 use crate::Version;
 
-#[derive(Debug, Clone, PartialEq, PartialOrd, Eq, Ord, Serialize, Deserialize)]
+#[derive(Debug, Copy, Clone, PartialEq, PartialOrd, Eq, Ord, Serialize, Deserialize)]
 pub enum MediaEntityFunctions {
     /// Unknown entity. That generally indicates that a driver didn’t initialize properly the entity, which is a Kernel bug
     Unknown,
@@ -212,6 +212,14 @@ impl MediaEntity {
 
     pub fn name(&self) -> &str {
         &self.name
+    }
+
+    pub fn function(&self) -> MediaEntityFunctions {
+        self.function
+    }
+
+    pub fn flags(&self) -> Option<MediaEntityFlags> {
+        self.flags
     }
 
     pub fn from_raw_entity(version: Version, entity: media::media_v2_entity) -> Self {
