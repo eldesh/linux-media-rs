@@ -12,9 +12,29 @@ pub struct InterfaceId(u32);
 
 #[derive(Debug, Clone, PartialEq, PartialOrd, Eq, Ord, Serialize, Deserialize)]
 pub struct MediaInterface {
-    pub id: InterfaceId,
-    pub r#type: MediaInterfaceType,
-    pub devnode: MediaIntfDevnode,
+    id: InterfaceId,
+    r#type: MediaInterfaceType,
+    devnode: MediaIntfDevnode,
+}
+
+impl MediaInterface {
+    pub fn new(id: InterfaceId, r#type: MediaInterfaceType, devnode: MediaIntfDevnode) -> Self {
+        Self {
+            id,
+            r#type,
+            devnode,
+        }
+    }
+
+    pub fn id(&self) -> InterfaceId {
+        self.id
+    }
+    pub fn r#type(&self) -> MediaInterfaceType {
+        self.r#type
+    }
+    pub fn devnode(&self) -> MediaIntfDevnode {
+        self.devnode
+    }
 }
 
 impl From<media::media_v2_interface> for MediaInterface {
