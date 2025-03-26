@@ -26,14 +26,17 @@ impl MediaInterface {
         }
     }
 
+    /// Get ID of this interface
     pub fn id(&self) -> InterfaceId {
         self.id
     }
 
+    /// Get [media interface type][`crate::MediaInterfaceType`] of this interface
     pub fn r#type(&self) -> MediaInterfaceType {
         self.r#type
     }
 
+    /// Get [devnode][`crate::MediaIntfDevnode`] of this interface
     pub fn devnode(&self) -> MediaIntfDevnode {
         self.devnode
     }
