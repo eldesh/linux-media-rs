@@ -44,10 +44,7 @@ impl MediaInterface {
     /// Get the path to the charactor device constructed with:
     /// `/sys/dev/char/{devnode.major}:{devnode.minor}`
     pub fn path(&self) -> PathBuf {
-        PathBuf::from(format!(
-            "/sys/dev/char/{}:{}",
-            self.devnode.major, self.devnode.minor
-        ))
+        self.devnode.into()
     }
 }
 
