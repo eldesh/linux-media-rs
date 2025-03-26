@@ -7,11 +7,11 @@ pub type Result<T> = std::result::Result<T, Error>;
 
 #[derive(Debug)]
 pub enum Error {
-    /// generic io error
+    /// Generic io error
     Io { source: io::Error, path: PathBuf },
-    /// file not found
+    /// File not found
     FileNotFound { path: PathBuf, source: io::Error },
-    /// generic ioctl error
+    /// Generic ioctl error
     /// `code` is constructed from [`std::io::Error::from_raw_os_error`].
     Ioctl {
         fd: RawFd,
