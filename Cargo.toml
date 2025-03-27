@@ -11,7 +11,7 @@ repository = "https://github.com/eldesh/linux-media"
 
 
 [dependencies]
-linux-media-sys = "=0.3.0"
+linux-media-sys = "=0.4.1"
 bitflags = { version = "=2.9.0", features = ["serde"] }
 libc = "=0.2.170"
 derive_more = { version = "2.0.1", features = ["full"] }
