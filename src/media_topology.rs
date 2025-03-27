@@ -1,47 +1,62 @@
 use std::fs::OpenOptions;
-use std::os::fd::{AsFd, AsRawFd, OwnedFd};
+use std::os::fd::{AsFd, OwnedFd};
 use std::os::unix::fs::OpenOptionsExt;
 use std::path::{Path, PathBuf};
 
-use linux_media_sys as media;
 use serde::{Deserialize, Serialize};
 
 use crate::error::{self, Result};
-use crate::ioctl;
 use crate::media_device_info::MediaDeviceInfo;
 use crate::media_entity::MediaEntity;
 use crate::media_interface::MediaInterface;
 use crate::media_link::MediaLink;
 use crate::media_pad::MediaPad;
+use crate::media_topology_builder::MediaTopologyBuilder;
 
-/// Wrapper of media_v2_topology.
+/// Rust representation of the [`media_v2_topology`][linux_media_sys::media_v2_topology] type.
+///
+/// # Details
+/// Captures a media device’s topology as defined by the Linux media controller API,
+/// including its version, optional device file path (if built from a path), and collections of entities, interfaces, pads, and links.
 #[derive(Debug, Clone, PartialEq, PartialOrd, Eq, Ord, Serialize, Deserialize)]
 pub struct MediaTopology {
     /// If the instance was built with a file path given, the device file path from which topology information was read, otherwise None if it was built from a file descriptor.
     path: Option<PathBuf>,
     version: u64,
-    entities: Vec<MediaEntity>,
-    interfaces: Vec<MediaInterface>,
-    pads: Vec<MediaPad>,
-    links: Vec<MediaLink>,
-}
-
-fn zeros_vec<T>(num: u32) -> Vec<T>
-where
-    T: Clone,
-{
-    let mut xs = vec![];
-    xs.resize(num as usize, unsafe { std::mem::zeroed() });
-    xs
+    entities: Option<Vec<MediaEntity>>,
+    interfaces: Option<Vec<MediaInterface>>,
+    pads: Option<Vec<MediaPad>>,
+    links: Option<Vec<MediaLink>>,
 }
 
 impl MediaTopology {
+    /// Construct a MediaTopology.
+    /// This function is provided solely for use by MediaTopologyBuilder.
+    pub(crate) fn new(
+        path: Option<PathBuf>,
+        version: u64,
+        entities: Option<Vec<MediaEntity>>,
+        interfaces: Option<Vec<MediaInterface>>,
+        pads: Option<Vec<MediaPad>>,
+        links: Option<Vec<MediaLink>>,
+    ) -> Self {
+        Self {
+            path,
+            version,
+            entities,
+            interfaces,
+            pads,
+            links,
+        }
+    }
+
     /// Constructs a MediaTopology from the given device file such like: /dev/mediaX
     ///
     /// # Details
     /// Constructs a MediaTopology from the media device file.
     ///
-    /// * `info`: The device info including media_version.
+    /// * `info`: The device info including
+    /// [`media_version`][crate::MediaDeviceInfo#structfield.media_version].
     /// * `path`: The path to the device file from which topology information is read.
     ///
     /// # Returns
@@ -77,58 +92,27 @@ impl MediaTopology {
     where
         F: AsFd,
     {
-        let mut topology: media::media_v2_topology = unsafe {
-            let mut topology: media::media_v2_topology = std::mem::zeroed();
-            ioctl!(fd.as_fd(), media::MEDIA_IOC_G_TOPOLOGY, &mut topology)?;
-            topology
-        };
-        let version = topology.topology_version;
-
-        let entities: Vec<media::media_v2_entity> = zeros_vec(topology.num_entities);
-        topology.ptr_entities = entities.as_ptr() as media::__u64;
-
-        let interfaces: Vec<media::media_v2_interface> = zeros_vec(topology.num_interfaces);
-        topology.ptr_interfaces = interfaces.as_ptr() as media::__u64;
-
-        let links: Vec<media::media_v2_link> = zeros_vec(topology.num_links);
-        topology.ptr_links = links.as_ptr() as media::__u64;
-
-        let pads: Vec<media::media_v2_pad> = zeros_vec(topology.num_pads);
-        topology.ptr_pads = pads.as_ptr() as media::__u64;
-
-        unsafe {
-            // Second ioctl call with allocated space to
-            // populate the entities/interface/links/pads array.
-            ioctl!(fd.as_fd(), media::MEDIA_IOC_G_TOPOLOGY, &mut topology)?;
-        };
-        assert_eq!(version, { topology.topology_version });
-
-        Ok(Self {
-            path: None,
-            version: topology.topology_version,
-            entities: entities
-                .into_iter()
-                .map(|ent| MediaEntity::from_raw_entity(info.media_version, ent))
-                .collect(),
-            interfaces: interfaces.into_iter().map(Into::into).collect(),
-            pads: pads
-                .into_iter()
-                .map(|pad| MediaPad::from(info.media_version, pad))
-                .collect(),
-            links: links.into_iter().map(Into::into).collect(),
-        })
+        MediaTopologyBuilder::new()
+            .get_entity()
+            .get_interface()
+            .get_pad()
+            .get_link()
+            .from_fd(info, fd)
     }
 
     pub fn entities(&self) -> &[MediaEntity] {
-        self.entities.as_ref()
+        self.entities.as_deref().unwrap_or(&[])
     }
+
     pub fn interfaces(&self) -> &[MediaInterface] {
-        self.interfaces.as_ref()
+        self.interfaces.as_deref().unwrap_or(&[])
     }
+
     pub fn pads(&self) -> &[MediaPad] {
-        self.pads.as_ref()
+        self.pads.as_deref().unwrap_or(&[])
     }
+
     pub fn links(&self) -> &[MediaLink] {
-        self.links.as_ref()
+        self.links.as_deref().unwrap_or(&[])
     }
 }

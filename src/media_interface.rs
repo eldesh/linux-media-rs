@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use derive_more::{Display, From, Into};
 use linux_media_sys as media;
 use serde::{Deserialize, Serialize};

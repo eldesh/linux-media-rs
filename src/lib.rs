@@ -13,6 +13,7 @@ pub mod media_link_enum;
 pub mod media_pad;
 pub mod media_pad_desc;
 pub mod media_topology;
+pub mod media_topology_builder;
 pub mod request;
 pub mod version;
 
@@ -29,5 +30,6 @@ pub use media_link_enum::*;
 pub use media_pad::*;
 pub use media_pad_desc::*;
 pub use media_topology::*;
+pub use media_topology_builder::*;
 pub use request::*;
 pub use version::*;
