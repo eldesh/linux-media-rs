@@ -83,11 +83,11 @@ impl MediaTopology {
     /// # Details
     /// Constructs a MediaTopology from a file descriptor referencing a device file (e.g., /dev/mediaX).
     ///
-    /// * `info`: A reference to a MediaDeviceInfo containing the media_version used to build the topology.
-    /// * `fd`: A file descriptor referring to the media device file.
+    /// * `info`: A reference to a [`MediaDeviceInfo`] containing the [`media_version`][crate::MediaDeviceInfo::media_version] used to build the topology.
+    /// * `fd`: A file descriptor referring to the media device file from which `info` was obtained.
     ///
     /// # Returns
-    /// A Result containing the constructed MediaTopology if successful, or an error otherwise.
+    /// A Result containing the constructed [`MediaTopology`] if successful, or an error otherwise.
     pub fn from_fd<F>(info: &MediaDeviceInfo, fd: F) -> Result<Self>
     where
         F: AsFd,

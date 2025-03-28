@@ -86,26 +86,55 @@ impl MediaTopologyBuilder {
         }
     }
 
+    /// Enable inclusion of entities in the [`MediaTopology`].
+    ///
+    /// # Details
+    /// Calling this method instructs the builder to include the entities as part of the [`MediaTopology`].
     pub fn get_entity(&mut self) -> &mut Self {
         self.entities = true;
         self
     }
 
+    /// Enable inclusion of interfaces in the [`MediaTopology`].
+    ///
+    /// # Details
+    /// Calling this method instructs the builder to include the interfaces as part of the [`MediaTopology`].
     pub fn get_interface(&mut self) -> &mut Self {
         self.interfaces = true;
         self
     }
 
+    /// Enable inclusion of links in the [`MediaTopology`].
+    ///
+    /// # Details
+    /// Calling this method instructs the builder to include the links as part of the [`MediaTopology`].
     pub fn get_link(&mut self) -> &mut Self {
         self.links = true;
         self
     }
 
+    /// Enable inclusion of pads in the [`MediaTopology`].
+    ///
+    /// # Details
+    /// Calling this method instructs the builder to include the pads as part of the [`MediaTopology`].
     pub fn get_pad(&mut self) -> &mut Self {
         self.pads = true;
         self
     }
 
+    /// Construct an instance of [`MediaTopology`] includes items specified with builder methods.
+    ///
+    /// # Details
+    /// Construct an instance of [`MediaTopology`] that
+    /// includes only items specified [`get_entity`][Self::get_entity], [`get_interface`][Self::get_interface], [`get_link`][Self::get_link] or [`get_pad`][Self::get_pad].
+    ///
+    /// # Parameters
+    ///
+    /// * `info`: A reference to a [`MediaDeviceInfo`] containing the [`media_version`][crate::MediaDeviceInfo::media_version] used to build the topology.
+    /// * `fd`: A file descriptor referring to the media device file from which `info` was obtained.
+    ///
+    /// # Returns
+    /// A Result containing the constructed [`MediaTopology`] if successful, or an error otherwise.
     pub fn from_fd<F>(self, info: &MediaDeviceInfo, fd: F) -> Result<MediaTopology>
     where
         F: AsFd,
