@@ -100,19 +100,35 @@ impl MediaTopology {
             .from_fd(info, fd)
     }
 
-    pub fn entities(&self) -> &[MediaEntity] {
+    pub fn entities_slice(&self) -> &[MediaEntity] {
         self.entities.as_deref().unwrap_or(&[])
     }
 
-    pub fn interfaces(&self) -> &[MediaInterface] {
+    pub fn interfaces_slice(&self) -> &[MediaInterface] {
         self.interfaces.as_deref().unwrap_or(&[])
     }
 
-    pub fn pads(&self) -> &[MediaPad] {
+    pub fn pads_slice(&self) -> &[MediaPad] {
         self.pads.as_deref().unwrap_or(&[])
     }
 
-    pub fn links(&self) -> &[MediaLink] {
+    pub fn links_slice(&self) -> &[MediaLink] {
         self.links.as_deref().unwrap_or(&[])
+    }
+
+    pub fn entities(&self) -> Option<&[MediaEntity]> {
+        self.entities.as_deref()
+    }
+
+    pub fn interfaces(&self) -> Option<&[MediaInterface]> {
+        self.interfaces.as_deref()
+    }
+
+    pub fn pads(&self) -> Option<&[MediaPad]> {
+        self.pads.as_deref()
+    }
+
+    pub fn links(&self) -> Option<&[MediaLink]> {
+        self.links.as_deref()
     }
 }

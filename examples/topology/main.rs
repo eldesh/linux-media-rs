@@ -25,13 +25,13 @@ fn main() -> media::error::Result<()> {
     let es = media::MediaEntityIter::new(
         media.device_fd(),
         media.media_version(),
-        topology.entities()[0].id(),
+        topology.entities_slice()[0].id(),
     );
     for e in es {
         println!("entity: {}", json::to_string_pretty(&e).unwrap());
     }
 
-    match media::MediaLinksEnum::new(media.device_fd(), topology.entities()[0].id()) {
+    match media::MediaLinksEnum::new(media.device_fd(), topology.entities_slice()[0].id()) {
         Ok(links) => {
             println!("link: {}", json::to_string_pretty(&links).unwrap());
         }

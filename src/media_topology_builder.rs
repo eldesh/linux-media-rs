@@ -13,6 +13,52 @@ use crate::MediaTopology;
 
 use linux_media_sys as media;
 
+/// A type for constructing [`MediaTopology`] using builder pattern.
+///
+/// # Details
+/// This type helps users to construct instances of [`MediaTopology`] with only needed fields.
+/// This makes reducing memory allocation and size of constructed objects.
+///
+/// # Examples
+/// In the following example, `topology` only have interface objects using [`MediaTopologyBuilder`].
+/// ```
+/// use linux_media::*;
+/// # fn main () -> error::Result<()> {
+/// if let Ok(media) = Media::from_path("/dev/media0") {
+///     let topology = MediaTopologyBuilder::new()
+///         .get_interface()
+///         .from_fd(media.info(), media.device_fd())?;
+///     assert!(matches!(topology.interfaces(), Some(_)));
+///     assert_eq!(topology.entities(), None);
+///     assert_eq!(topology.pads(), None);
+///     assert_eq!(topology.links(), None);
+/// }
+/// # Ok(())
+/// # }
+/// ```
+///
+/// Calling full options of builder, constructed topology is equals to the instance constructed with [`MediaTopology::from_path`][crate::MediaTopology::from_path] or [`MediaTopology::from_fd`][crate::MediaTopology::from_fd].
+///
+/// ```
+/// use linux_media::*;
+/// # fn main () -> error::Result<()> {
+/// if let Ok(media) = Media::from_path("/dev/media0") {
+///     let topologyA = MediaTopologyBuilder::new()
+///         .get_entity()
+///         .get_interface()
+///         .get_pad()
+///         .get_link()
+///         .from_fd(media.info(), media.device_fd())?;
+///     assert!(matches!(topologyA.interfaces(), Some(_)));
+///     assert!(matches!(topologyA.entities(), Some(_)));
+///     assert!(matches!(topologyA.pads(), Some(_)));
+///     assert!(matches!(topologyA.links(), Some(_)));
+///     let topologyB = MediaTopology::from_fd(media.info(), media.device_fd())?;
+///     assert_eq!(topologyA, topologyB);
+/// }
+/// # Ok(())
+/// # }
+/// ```
 #[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Eq, Ord)]
 pub struct MediaTopologyBuilder {
     entities: bool,
