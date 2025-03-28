@@ -189,6 +189,7 @@ dependencies = [
  "derive_more",
  "libc",
  "linux-media-sys",
+ "regex",
  "serde",
  "serde_json",
 ]
