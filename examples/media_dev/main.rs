@@ -1,5 +1,4 @@
 use std::fs;
-use std::io;
 use std::path::{Path, PathBuf};
 
 use linux_media as media;
@@ -8,6 +7,8 @@ use regex::Regex;
 use media::error::trap_io_error;
 
 struct MediaDeviceIterator {
+    /// The root directly from which media device searches originates.
+    #[allow(unused)]
     path: PathBuf,
     /// A pattern matches driver name of enumerated media device interfaces.
     driver: Regex,
@@ -29,33 +30,35 @@ impl Iterator for MediaDeviceIterator {
 }
 
 impl MediaDeviceIterator {
-    pub fn new(driver: Regex) -> io::Result<Self> {
+    pub fn new(driver: Regex) -> media::error::Result<Self> {
         let sysfs = Path::new("/sys/bus/media/devices");
         Self::with_sysfs(sysfs, driver)
     }
 
-    pub fn with_sysfs<P>(sysfs: P, driver: Regex) -> io::Result<Self>
+    pub fn with_sysfs<P>(sysfs: P, driver: Regex) -> media::error::Result<Self>
     where
         P: AsRef<Path>,
     {
+        let sysfs = sysfs.as_ref().to_path_buf();
         let iter = Box::new(
             sysfs
-                .as_ref()
-                .read_dir()?
+                .as_path()
+                .read_dir()
+                .map_err(|e| trap_io_error(e, sysfs.clone()))?
                 .filter_map(|e| e.ok())
                 .filter(|dev| dev.path().is_symlink())
                 .filter_map(|dev| fs::read_link(&dev.path()).ok()),
         );
 
         Ok(Self {
-            path: sysfs.as_ref().to_path_buf(),
+            path: sysfs,
             driver,
             iter,
         })
     }
 }
 
-fn media_devices(driver: Regex) -> io::Result<MediaDeviceIterator> {
+fn media_devices(driver: Regex) -> media::error::Result<MediaDeviceIterator> {
     MediaDeviceIterator::new(driver)
 }
 
@@ -70,7 +73,16 @@ fn read_to_string<P: AsRef<Path>>(path: P) -> media::error::Result<String> {
 }
 
 fn main() -> media::error::Result<()> {
-    for media_node in media_devices(Regex::new("pisp_be").unwrap()).unwrap() {
+    let mut args = std::env::args();
+    args.next(); // drop program name
+    let driver = if let Some(path) = args.next() {
+        std::borrow::Cow::Owned(path)
+    } else {
+        std::borrow::Cow::Borrowed("pisp_be")
+    };
+    println!("driver: {}", driver);
+
+    for media_node in media_devices(Regex::new(&driver).unwrap())? {
         dbg!(media_node.display());
         let media = media::Media::from_path(&media_node).unwrap();
         let topology = media::MediaTopologyBuilder::new()
