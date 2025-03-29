@@ -86,7 +86,7 @@ fn main() -> media::error::Result<()> {
     println!("driver: {}", driver);
 
     for media_node in media_devices(Regex::new(&driver).unwrap())? {
-        dbg!(media_node.display());
+        println!("media: {}", media_node.display());
         let media = media::Media::from_path(&media_node).unwrap();
         let topology = media::MediaTopologyBuilder::new()
             .get_interface()
@@ -102,7 +102,7 @@ fn main() -> media::error::Result<()> {
             let dev_name = read_to_string(&dbg!(char_dev.join("name")))?;
             let char_dev_link = read_link(&char_dev)?;
             let dev_node = Path::new("/dev").join(dbg!(&char_dev_link).file_name().unwrap());
-            println!("{}\t({})", dev_name, dev_node.display());
+            println!("{}: {}", dev_name.trim_end(), dev_node.display());
         }
     }
     Ok(())
