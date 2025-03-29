@@ -20,12 +20,15 @@ struct MediaDeviceIterator {
 impl Iterator for MediaDeviceIterator {
     type Item = PathBuf;
     fn next(&mut self) -> Option<Self::Item> {
-        match self.iter.next() {
-            Some(item) if self.driver.is_match(&item.to_string_lossy()) => {
-                item.file_name().map(|file| Path::new("/dev").join(file))
+        while let Some(item) = self.iter.next() {
+            if self.driver.is_match(&item.to_string_lossy()) {
+                if let Some(file_name) = item.file_name() {
+                    return Some(Path::new("/dev").join(file_name));
+                }
             }
-            Some(_) | None => None,
+            dbg!(item.to_string_lossy());
         }
+        None
     }
 }
 
