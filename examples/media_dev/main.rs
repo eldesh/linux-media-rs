@@ -10,23 +10,32 @@ struct MediaDeviceIterator {
     /// The root directly from which media device searches originates.
     #[allow(unused)]
     path: PathBuf,
-    /// A pattern matches driver name of enumerated media device interfaces.
-    driver: Regex,
-    /// iterator traverses the path and generates file paths of device files.
-    iter: Box<dyn Iterator<Item = PathBuf> + 'static>,
+    /// A pattern matches `model' name of enumerated media device interfaces.
+    model: Regex,
+    /// iterator traverses the [`path`] and generates file paths of device files.
+    iter: Box<dyn Iterator<Item = std::fs::DirEntry> + 'static>,
 }
 
 /// Enumerate paths of media devices that file name contains the specified driver name.
 impl Iterator for MediaDeviceIterator {
     type Item = PathBuf;
     fn next(&mut self) -> Option<Self::Item> {
-        while let Some(item) = self.iter.next() {
-            if self.driver.is_match(&item.to_string_lossy()) {
-                if let Some(file_name) = item.file_name() {
-                    return Some(Path::new("/dev").join(file_name));
+        let dev = Path::new("/dev");
+        while let Some(dir) = self.iter.next() {
+            // filter by contents of `$sysfs / mediaN / model`
+            if !fs::read_to_string(dir.path().join("model"))
+                .map(|m| self.model.is_match(&m))
+                .unwrap_or(false)
+            {
+                dbg!(dir.path());
+                continue;
+            }
+
+            if let Ok(path) = fs::read_link(&dir.path()) {
+                if let Some(file_name) = path.file_name() {
+                    return Some(dev.join(file_name));
                 }
             }
-            dbg!(item.to_string_lossy());
         }
         None
     }
@@ -38,7 +47,7 @@ impl MediaDeviceIterator {
         Self::with_sysfs(sysfs, driver)
     }
 
-    pub fn with_sysfs<P>(sysfs: P, driver: Regex) -> media::error::Result<Self>
+    pub fn with_sysfs<P>(sysfs: P, model: Regex) -> media::error::Result<Self>
     where
         P: AsRef<Path>,
     {
@@ -49,20 +58,19 @@ impl MediaDeviceIterator {
                 .read_dir()
                 .map_err(|e| trap_io_error(e, sysfs.clone()))?
                 .filter_map(|e| e.ok())
-                .filter(|dev| dev.path().is_symlink())
-                .filter_map(|dev| fs::read_link(&dev.path()).ok()),
+                .filter(|dir| dir.path().is_symlink()),
         );
 
         Ok(Self {
             path: sysfs,
-            driver,
+            model,
             iter,
         })
     }
 }
 
-fn media_devices(driver: Regex) -> media::error::Result<MediaDeviceIterator> {
-    MediaDeviceIterator::new(driver)
+fn media_devices(model: Regex) -> media::error::Result<MediaDeviceIterator> {
+    MediaDeviceIterator::new(model)
 }
 
 fn read_link<P: AsRef<Path>>(path: P) -> media::error::Result<PathBuf> {
@@ -78,14 +86,14 @@ fn read_to_string<P: AsRef<Path>>(path: P) -> media::error::Result<String> {
 fn main() -> media::error::Result<()> {
     let mut args = std::env::args();
     args.next(); // drop program name
-    let driver = if let Some(path) = args.next() {
+    let model = if let Some(path) = args.next() {
         std::borrow::Cow::Owned(path)
     } else {
-        std::borrow::Cow::Borrowed("pisp_be")
+        std::borrow::Cow::Borrowed("pispbe")
     };
-    println!("driver: {}", driver);
+    println!("model: {}", model);
 
-    for media_node in media_devices(Regex::new(&driver).unwrap())? {
+    for media_node in media_devices(Regex::new(&model).unwrap())? {
         println!("media: {}", media_node.display());
         let media = media::Media::from_path(&media_node).unwrap();
         let topology = media::MediaTopologyBuilder::new()
