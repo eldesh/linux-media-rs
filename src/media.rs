@@ -5,8 +5,8 @@ use std::path::{Path, PathBuf};
 
 use crate::error;
 use crate::MediaDeviceInfo;
-use crate::Version;
 use crate::Request;
+use crate::Version;
 
 #[derive(Debug)]
 pub struct Media {
