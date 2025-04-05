@@ -8,7 +8,10 @@ description = "A Rust library providing access to the Linux Media Subsystem."
 license = "MIT"
 readme = "README.md"
 repository = "https://github.com/eldesh/linux-media"
-
+categories = [
+  "api-bindings",
+  "os::linux-apis"
+]
 
 [dependencies]
 linux-media-sys = "=0.4.1"
