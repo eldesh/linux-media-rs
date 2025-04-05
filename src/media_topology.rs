@@ -30,8 +30,8 @@ pub struct MediaTopology {
 }
 
 impl MediaTopology {
-    /// Construct a MediaTopology.
-    /// This function is provided solely for use by MediaTopologyBuilder.
+    /// Construct a [`MediaTopology`].
+    /// This function is provided solely for use by [`MediaTopologyBuilder`].
     pub(crate) fn new(
         path: Option<PathBuf>,
         version: u64,
@@ -55,8 +55,7 @@ impl MediaTopology {
     /// # Details
     /// Constructs a MediaTopology from the media device file.
     ///
-    /// * `info`: The device info including
-    /// [`media_version`][crate::MediaDeviceInfo#structfield.media_version].
+    /// * `info`: The device info including [`media_version`][crate::MediaDeviceInfo#structfield.media_version].
     /// * `path`: The path to the device file from which topology information is read.
     ///
     /// # Returns
