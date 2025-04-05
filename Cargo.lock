@@ -182,7 +182,7 @@ dependencies = [
 
 [[package]]
 name = "linux-media"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "autocfg 0.1.8",
  "bitflags",
