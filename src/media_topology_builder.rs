@@ -6,6 +6,7 @@ use std::ptr::null;
 
 use crate::error::{self, Result};
 use crate::ioctl;
+use crate::Media;
 use crate::MediaDeviceInfo;
 use crate::MediaEntity;
 use crate::MediaPad;
@@ -224,5 +225,9 @@ impl MediaTopologyBuilder {
         let owned_fd = OwnedFd::from(file);
         let topo = self.from_fd(info, &owned_fd)?;
         Ok((owned_fd, topo))
+    }
+
+    pub fn from_media(&self, media: &Media) -> Result<MediaTopology> {
+        self.from_fd(media.info(), media.device_fd())
     }
 }

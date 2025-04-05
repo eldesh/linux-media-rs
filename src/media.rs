@@ -5,6 +5,7 @@ use std::path::{Path, PathBuf};
 
 use crate::error;
 use crate::MediaDeviceInfo;
+use crate::MediaTopology;
 use crate::Request;
 use crate::Version;
 
@@ -50,5 +51,9 @@ impl Media {
 
     pub fn new_request(&self) -> error::Result<Request<'_>> {
         Request::new(self.fd.as_fd())
+    }
+
+    pub fn new_topology(&self) -> error::Result<MediaTopology> {
+        MediaTopology::from_fd(self.info(), self.device_fd())
     }
 }

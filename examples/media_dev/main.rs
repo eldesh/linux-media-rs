@@ -95,10 +95,10 @@ fn main() -> media::error::Result<()> {
 
     for media_node in media_devices(Regex::new(&model).unwrap())? {
         println!("media: {}", media_node.display());
-        let media = media::Media::from_path(&media_node).unwrap();
+        let media = media::Media::from_path(&media_node)?;
         let topology = media::MediaTopologyBuilder::new()
             .get_interface()
-            .from_fd(media.info(), media.device_fd())?;
+            .from_media(&media)?;
 
         for char_dev in topology
             .interfaces_slice()
