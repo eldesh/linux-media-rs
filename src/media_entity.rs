@@ -188,20 +188,6 @@ pub struct MediaEntity {
 }
 
 impl MediaEntity {
-    fn new(
-        id: EntityId,
-        name: &str,
-        function: MediaEntityFunctions,
-        flags: Option<MediaEntityFlags>,
-    ) -> Self {
-        Self {
-            id,
-            name: name.to_owned(),
-            function,
-            flags,
-        }
-    }
-
     pub fn has_flags(version: Version) -> bool {
         media::MEDIA_V2_ENTITY_HAS_FLAGS(<Version as Into<u32>>::into(version).into())
     }
