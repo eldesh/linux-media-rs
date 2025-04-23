@@ -211,6 +211,18 @@ impl MediaTopologyBuilder {
         ))
     }
 
+    /// Construct an instance of [`MediaTopology`] from device file.
+    ///
+    /// # Details
+    /// Construct an instance of [`MediaTopology`] from device file that specified with path.
+    ///
+    /// # Parameters
+    ///
+    /// * `info`: A reference to a [`MediaDeviceInfo`] containing the [`media_version`][crate::MediaDeviceInfo::media_version] used to build the topology.
+    /// * `path`: A reference to a device file containing the infomation of media topology.
+    ///
+    /// # Returns
+    /// A Result with file descriptor to device file and constructed [`MediaTopology`] if successful, or an error otherwise.
     pub fn from_path<P>(self, info: &MediaDeviceInfo, path: P) -> Result<(OwnedFd, MediaTopology)>
     where
         P: AsRef<Path>,
@@ -227,6 +239,19 @@ impl MediaTopologyBuilder {
         Ok((owned_fd, topo))
     }
 
+    /// Construct an instance of [`MediaTopology`] from [`Media`].
+    ///
+    /// # Details
+    /// Construct an instance of [`MediaTopology`] from [`Media`] that
+    /// includes only items specified [`get_entity`][Self::get_entity], [`get_interface`][Self::get_interface], [`get_link`][Self::get_link] or [`get_pad`][Self::get_pad].
+    ///
+    /// # Parameters
+    ///
+    /// * `media`: A reference to a [`Media`] containing the [`media_info`][crate::Media::info] and
+    /// [`device_fd`][crate::Media::device_fd`].
+    ///
+    /// # Returns
+    /// A Result containing the constructed [`MediaTopology`] if successful, or an error otherwise.
     pub fn from_media(&self, media: &Media) -> Result<MediaTopology> {
         self.from_fd(media.info(), media.device_fd())
     }
